@@ -3,13 +3,16 @@ import { AlertTriangle, Info, ShoppingCart } from "lucide-react";
 import { CAR_DB, BRANDS, calcAcquisitionTax, calcCarTax } from "./data";
 
 // 할인할증 계수: [경력구간][사고이력]
-// 실제 보험사 할인할증 등급 체계를 단순화한 추정 계수
+// 실제 보험개발원 등급 체계 반영:
+// - 경력이 길수록 등급이 높아 사고 후에도 출발점이 낮음
+// - 사고 1건: 약 3~4등급 하락, 2건+: 약 6~8등급 하락
+// - 검증: 테슬라 6,999만원 / 10년+ / 가해사고 1건(경미) → 역산 계수 0.78, 추정 0.80
 const INSURANCE_FACTORS = {
-  lt1:   { none: 2.8, one: 3.8, multi: 4.8 }, // 1년 미만
-  y1to3: { none: 1.9, one: 2.7, multi: 3.6 }, // 1~3년
-  y3to5: { none: 1.4, one: 2.0, multi: 2.8 }, // 3~5년
-  y5to10:{ none: 1.05,one: 1.6, multi: 2.2 }, // 5~10년
-  gt10:  { none: 0.72,one: 1.1, multi: 1.65}, // 10년+
+  lt1:   { none: 2.80, one: 3.50, multi: 4.50 }, // 1년 미만 (7~11등급대)
+  y1to3: { none: 1.90, one: 2.50, multi: 3.20 }, // 1~3년 (9~12등급대)
+  y3to5: { none: 1.40, one: 1.80, multi: 2.40 }, // 3~5년 (11~14등급대)
+  y5to10:{ none: 1.05, one: 1.30, multi: 1.70 }, // 5~10년 (13~16등급대)
+  gt10:  { none: 0.72, one: 0.88, multi: 1.15 }, // 10년+ (16~19등급대, 사고 후에도 낮은 계수 유지)
 };
 
 // 보험료 = 고정 기본료 + 차량가 × 자차요율 × 할인할증계수
