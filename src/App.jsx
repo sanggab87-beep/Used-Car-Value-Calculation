@@ -5,6 +5,7 @@ const CAR_DB = [
   // ===== 현대 =====
   {
     id: "tucson", brand: "현대", name: "투싼",
+    availableOptions: ["awd", "sunroof"],
     trims: [
       { id: "modern", label: "모던", price: 2805 },
       { id: "premium", label: "프리미엄", price: 3069 },
@@ -14,6 +15,7 @@ const CAR_DB = [
   },
   {
     id: "santafe", brand: "현대", name: "싼타페",
+    availableOptions: ["awd", "sunroof"],
     trims: [
       { id: "exclusive", label: "익스클루시브", price: 3606 },
       { id: "prestige", label: "프레스티지", price: 3889 },
@@ -23,6 +25,7 @@ const CAR_DB = [
   },
   {
     id: "grandeur", brand: "현대", name: "그랜저",
+    availableOptions: ["awd", "sunroof"],
     trims: [
       { id: "premium", label: "프리미엄", price: 3798 },
       { id: "exclusive", label: "익스클루시브", price: 4287 },
@@ -32,6 +35,7 @@ const CAR_DB = [
   },
   {
     id: "avante", brand: "현대", name: "아반떼",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "smart", label: "스마트", price: 2034 },
       { id: "modern", label: "모던", price: 2355 },
@@ -41,6 +45,7 @@ const CAR_DB = [
   },
   {
     id: "sonata", brand: "현대", name: "쏘나타",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "premium", label: "프리미엄", price: 2826 },
       { id: "s", label: "S", price: 2956 },
@@ -50,6 +55,7 @@ const CAR_DB = [
   },
   {
     id: "kona", brand: "현대", name: "코나",
+    availableOptions: ["awd", "sunroof"],
     trims: [
       { id: "modern", label: "모던", price: 2478 },
       { id: "hpick", label: "H-Pick", price: 2559 },
@@ -59,6 +65,7 @@ const CAR_DB = [
   },
   {
     id: "palisade", brand: "현대", name: "팰리세이드",
+    availableOptions: ["awd", "sunroof"],
     trims: [
       { id: "exclusive", label: "익스클루시브", price: 4383 },
       { id: "prestige", label: "프레스티지", price: 4936 },
@@ -67,6 +74,7 @@ const CAR_DB = [
   },
   {
     id: "casper", brand: "현대", name: "캐스퍼",
+    availableOptions: [],
     trims: [
       { id: "smart", label: "스마트", price: 1493 },
       { id: "essential", label: "디 에센셜", price: 1771 },
@@ -75,6 +83,7 @@ const CAR_DB = [
   },
   {
     id: "ioniq5", brand: "현대", name: "아이오닉5 (전기차)",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "evalue", label: "E-Value+", price: 4735 },
       { id: "exclusive", label: "익스클루시브 (추정)", price: 5290 },
@@ -83,6 +92,7 @@ const CAR_DB = [
   },
   {
     id: "ioniq6", brand: "현대", name: "아이오닉6 (전기차)",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "evalue", label: "E-Value+", price: 4856 },
       { id: "exclusive", label: "익스클루시브", price: 5095 },
@@ -91,10 +101,12 @@ const CAR_DB = [
   },
   {
     id: "staria", brand: "현대", name: "스타리아 (하이브리드)",
+    availableOptions: ["awd", "sunroof"],
     trims: [{ id: "base", label: "기본형 (추정)", price: 3625 }],
   },
   {
     id: "nexo", brand: "현대", name: "넥쏘 (수소전기차)",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "exclusive", label: "익스클루시브", price: 7644 },
       { id: "exclusivespecial", label: "익스클루시브 스페셜", price: 7928 },
@@ -104,6 +116,7 @@ const CAR_DB = [
   // ===== 기아 =====
   {
     id: "sportage", brand: "기아", name: "스포티지",
+    availableOptions: ["awd", "sunroof"],
     trims: [
       { id: "prestige", label: "프레스티지", price: 2863 },
       { id: "noblesse", label: "노블레스", price: 3197 },
@@ -113,6 +126,7 @@ const CAR_DB = [
   },
   {
     id: "sorento", brand: "기아", name: "쏘렌토",
+    availableOptions: ["awd", "sunroof"],
     trims: [
       { id: "prestige", label: "프레스티지", price: 3580 },
       { id: "noblesse", label: "노블레스", price: 3891 },
@@ -122,6 +136,7 @@ const CAR_DB = [
   },
   {
     id: "carnival", brand: "기아", name: "카니발 (9인승)",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "prestige", label: "프레스티지", price: 3636 },
       { id: "noblesse", label: "노블레스", price: 4071 },
@@ -131,6 +146,7 @@ const CAR_DB = [
   },
   {
     id: "ray", brand: "기아", name: "레이",
+    availableOptions: [],
     trims: [
       { id: "trendy", label: "트렌디", price: 1490 },
       { id: "prestige", label: "프레스티지", price: 1760 },
@@ -140,6 +156,7 @@ const CAR_DB = [
   },
   {
     id: "k5", brand: "기아", name: "K5",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "smartselect", label: "스마트 셀렉션", price: 2724 },
       { id: "prestige", label: "프레스티지", price: 2808 },
@@ -150,6 +167,7 @@ const CAR_DB = [
   },
   {
     id: "k8", brand: "기아", name: "K8",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "noblesselight", label: "노블레스 라이트", price: 3679 },
       { id: "bestselect", label: "베스트 셀렉션", price: 3813 },
@@ -160,6 +178,7 @@ const CAR_DB = [
   },
   {
     id: "ev3", brand: "기아", name: "EV3 (전기차)",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "air_std", label: "에어 스탠다드", price: 4208 },
       { id: "air_long", label: "에어 롱레인지", price: 4650 },
@@ -169,6 +188,7 @@ const CAR_DB = [
   },
   {
     id: "seltos", brand: "기아", name: "셀토스",
+    availableOptions: ["awd", "sunroof"],
     trims: [
       { id: "trendy", label: "트렌디", price: 2477 },
       { id: "prestige", label: "프레스티지", price: 2840 },
@@ -176,9 +196,10 @@ const CAR_DB = [
       { id: "xline", label: "X-Line", price: 3217 },
     ],
   },
-  { id: "k3", brand: "기아", name: "K3 (2024년 단종)", trims: [{ id: "default", label: "기본 (추정치)", price: 2100 }] },
+  { id: "k3", brand: "기아", name: "K3 (2024년 단종)", availableOptions: ["sunroof"], trims: [{ id: "default", label: "기본 (추정치)", price: 2100 }] },
   {
     id: "morning", brand: "기아", name: "모닝",
+    availableOptions: [],
     trims: [
       { id: "basic", label: "기본형", price: 1421 },
       { id: "top", label: "상위형", price: 1911 },
@@ -186,6 +207,7 @@ const CAR_DB = [
   },
   {
     id: "niro", brand: "기아", name: "니로 (하이브리드)",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "trendy", label: "트렌디", price: 2885 },
       { id: "prestige", label: "프레스티지", price: 3195 },
@@ -194,6 +216,7 @@ const CAR_DB = [
   },
   {
     id: "ev6", brand: "기아", name: "EV6 (전기차)",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "light", label: "라이트", price: 4660 },
       { id: "air", label: "에어", price: 5140 },
@@ -203,6 +226,7 @@ const CAR_DB = [
   },
   {
     id: "ev9", brand: "기아", name: "EV9 (전기차)",
+    availableOptions: ["sunroof"],
     trims: [
       { id: "light", label: "라이트", price: 6197 },
       { id: "air", label: "에어", price: 6412 },
@@ -213,28 +237,31 @@ const CAR_DB = [
   },
   {
     id: "mohave", brand: "기아", name: "모하비 (2024년 단종)",
+    availableOptions: ["awd", "sunroof"],
     trims: [
       { id: "platinum", label: "플래티넘", price: 5054 },
       { id: "masters_gravity", label: "마스터즈 그래비티 (추정)", price: 5598 },
     ],
   },
-  // ===== 제네시스 =====
-  { id: "genesis_g70", brand: "제네시스", name: "G70", trims: [{ id: "default", label: "기본 (추정치)", price: 4500 }] },
+  // ===== 제네시스 (AWD·선루프 기본 포함 또는 트림 내 포함) =====
+  { id: "genesis_g70", brand: "제네시스", name: "G70", availableOptions: ["awd"], trims: [{ id: "default", label: "기본 (추정치)", price: 4500 }] },
   {
     id: "genesis_g80", brand: "제네시스", name: "G80",
+    availableOptions: ["awd"],
     trims: [
       { id: "base", label: "기본 (2.5터보, 추정)", price: 5900 },
       { id: "sport", label: "스포츠 패키지", price: 6470 },
       { id: "black", label: "G80 블랙 (추정)", price: 8000 },
     ],
   },
-  { id: "genesis_g90", brand: "제네시스", name: "G90", trims: [{ id: "default", label: "기본 (추정치)", price: 9500 }] },
-  { id: "genesis_gv60", brand: "제네시스", name: "GV60", trims: [{ id: "default", label: "기본 (추정치)", price: 6200 }] },
-  { id: "genesis_gv70", brand: "제네시스", name: "GV70", trims: [{ id: "default", label: "기본 (추정치)", price: 6500 }] },
-  { id: "genesis_gv80", brand: "제네시스", name: "GV80", trims: [{ id: "default", label: "기본 (추정치)", price: 7500 }] },
-  // ===== 테슬라 =====
+  { id: "genesis_g90", brand: "제네시스", name: "G90", availableOptions: [], trims: [{ id: "default", label: "기본 (추정치)", price: 9500 }] },
+  { id: "genesis_gv60", brand: "제네시스", name: "GV60", availableOptions: [], trims: [{ id: "default", label: "기본 (추정치)", price: 6200 }] },
+  { id: "genesis_gv70", brand: "제네시스", name: "GV70", availableOptions: ["awd"], trims: [{ id: "default", label: "기본 (추정치)", price: 6500 }] },
+  { id: "genesis_gv80", brand: "제네시스", name: "GV80", availableOptions: ["awd"], trims: [{ id: "default", label: "기본 (추정치)", price: 7500 }] },
+  // ===== 테슬라 (AWD=트림 구분, 선루프=글라스루프 기본) =====
   {
     id: "tesla_modely", brand: "테슬라", name: "모델Y",
+    availableOptions: [],
     trims: [
       { id: "premium_rwd", label: "프리미엄 RWD", price: 4999 },
       { id: "premium_awd", label: "프리미엄 롱레인지 AWD", price: 5999 },
@@ -242,15 +269,17 @@ const CAR_DB = [
   },
   {
     id: "tesla_model3", brand: "테슬라", name: "모델3",
+    availableOptions: [],
     trims: [
       { id: "standard_rwd", label: "스탠다드 RWD", price: 4199 },
       { id: "premium_lr_rwd", label: "프리미엄 롱레인지 RWD", price: 5299 },
       { id: "premium_performance", label: "프리미엄 퍼포먼스", price: 5999 },
     ],
   },
-  // ===== BMW =====
+  // ===== BMW (xDrive·선루프 트림가에 포함) =====
   {
     id: "bmw_5series", brand: "BMW", name: "5시리즈",
+    availableOptions: [],
     trims: [
       { id: "520i", label: "520i", price: 6880 },
       { id: "523d", label: "523d", price: 7580 },
@@ -260,6 +289,7 @@ const CAR_DB = [
   },
   {
     id: "bmw_x3", brand: "BMW", name: "X3",
+    availableOptions: [],
     trims: [
       { id: "xdrive20i", label: "xDrive20i xLine", price: 6440 },
       { id: "xdrive20d", label: "xDrive20d xLine", price: 6930 },
@@ -268,15 +298,17 @@ const CAR_DB = [
   },
   {
     id: "bmw_x5", brand: "BMW", name: "X5",
+    availableOptions: [],
     trims: [
       { id: "xdrive30d", label: "xDrive30d (추정)", price: 11800 },
       { id: "xdrive40i", label: "xDrive40i (추정)", price: 13000 },
       { id: "m60i", label: "M60i (추정)", price: 15800 },
     ],
   },
-  // ===== 벤츠 =====
+  // ===== 벤츠 (4MATIC·선루프 트림가에 포함) =====
   {
     id: "benz_eclass", brand: "벤츠", name: "E클래스",
+    availableOptions: [],
     trims: [
       { id: "e200", label: "E200 아방가르드", price: 7650 },
       { id: "e300", label: "E300 (추정)", price: 8800 },
@@ -285,6 +317,7 @@ const CAR_DB = [
   },
   {
     id: "benz_glc", brand: "벤츠", name: "GLC",
+    availableOptions: [],
     trims: [
       { id: "220d", label: "220d 4MATIC", price: 8120 },
       { id: "300_avantgarde", label: "300 4MATIC Avantgarde", price: 8140 },
@@ -293,6 +326,7 @@ const CAR_DB = [
   },
   {
     id: "benz_gle", brand: "벤츠", name: "GLE",
+    availableOptions: [],
     trims: [
       { id: "350", label: "350 4MATIC", price: 11660 },
       { id: "300d", label: "300d 4MATIC", price: 11780 },
@@ -317,6 +351,15 @@ const EXTRA_OPTIONS = [
 ];
 
 const STANDARD_KM_PER_YEAR = 20000;
+
+const NOW = new Date();
+const THIS_YEAR = NOW.getFullYear();
+const THIS_MONTH = NOW.getMonth() + 1;
+
+function calcAgeInYears(mfgYear, mfgMonth) {
+  const months = (THIS_YEAR - mfgYear) * 12 + (THIS_MONTH - mfgMonth);
+  return Math.max(months, 0) / 12;
+}
 
 function calcAgeDepreciation(years) {
   if (years <= 0) return 1;
@@ -353,26 +396,37 @@ export default function App() {
   const [carId, setCarId] = useState(carsInBrand[0].id);
   const car = CAR_DB.find((c) => c.id === carId) || carsInBrand[0];
   const [trimId, setTrimId] = useState(car.trims[0].id);
-  const [year, setYear] = useState(3);
+  const [useCustomPrice, setUseCustomPrice] = useState(false);
+  const [customPriceInput, setCustomPriceInput] = useState("");
+  const [mfgYear, setMfgYear] = useState(THIS_YEAR - 3);
+  const [mfgMonth, setMfgMonth] = useState(THIS_MONTH);
   const [mileage, setMileage] = useState(60000);
   const [accidentId, setAccidentId] = useState("none");
   const [selectedOptions, setSelectedOptions] = useState([]);
 
   const trim = car.trims.find((t) => t.id === trimId) || car.trims[0];
   const accident = ACCIDENT_OPTIONS.find((a) => a.id === accidentId);
+  const ageYears = calcAgeInYears(mfgYear, mfgMonth);
+  const basePrice = useCustomPrice ? (parseFloat(customPriceInput) || 0) : trim.price;
 
   const handleBrandChange = (newBrand) => {
     setBrand(newBrand);
     const firstCar = CAR_DB.find((c) => c.brand === newBrand);
     setCarId(firstCar.id);
     setTrimId(firstCar.trims[0].id);
+    setUseCustomPrice(false);
+    setSelectedOptions([]);
   };
 
   const handleCarChange = (newCarId) => {
     setCarId(newCarId);
     const newCar = CAR_DB.find((c) => c.id === newCarId);
     setTrimId(newCar.trims[0].id);
+    setUseCustomPrice(false);
+    setSelectedOptions([]);
   };
+
+  const availableOptions = EXTRA_OPTIONS.filter((o) => car.availableOptions.includes(o.id));
 
   const toggleOption = (id) => {
     setSelectedOptions((prev) =>
@@ -381,10 +435,10 @@ export default function App() {
   };
 
   const result = useMemo(() => {
-    const basePrice = trim.price;
-    const ageRate = calcAgeDepreciation(year);
+    if (basePrice <= 0) return null;
+    const ageRate = calcAgeDepreciation(ageYears);
     const afterAge = basePrice * ageRate;
-    const mileageAdj = calcMileageAdjustment(year, mileage);
+    const mileageAdj = calcMileageAdjustment(ageYears, mileage);
     const afterMileage = afterAge * (1 + mileageAdj);
     const afterAccident = afterMileage * (1 - accident.deduct);
     const optionResidual = EXTRA_OPTIONS.filter((o) => selectedOptions.includes(o.id)).reduce(
@@ -394,7 +448,7 @@ export default function App() {
     const afterOptions = afterAccident + optionResidual;
     const minPrice = afterOptions * 0.95;
     return { basePrice, ageRate, afterAge, mileageAdj, afterMileage, accidentDeduct: accident.deduct, afterAccident, optionResidual, afterOptions, minPrice };
-  }, [trim, year, mileage, accident, selectedOptions]);
+  }, [basePrice, ageYears, mileage, accident, selectedOptions]);
 
   const fmt = (n) => Math.round(n).toLocaleString("ko-KR");
 
@@ -444,70 +498,111 @@ export default function App() {
             </select>
           </div>
 
-          {/* 트림 */}
-          {car.trims.length > 1 && (
+          {/* 트림 / 신차가 */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-sm font-medium text-slate-700">
+                {useCustomPrice ? "신차가 직접 입력" : "트림 (신차가 기준)"}
+              </label>
+              <button
+                onClick={() => setUseCustomPrice((v) => !v)}
+                className="text-xs text-blue-500 hover:text-blue-700 underline underline-offset-2"
+              >
+                {useCustomPrice ? "← DB에서 선택" : "트림 없음 / 직접 입력 →"}
+              </button>
+            </div>
+
+            {useCustomPrice ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="신차 출고가 입력 (예: 3200)"
+                  value={customPriceInput}
+                  onChange={(e) => setCustomPriceInput(e.target.value)}
+                  className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"
+                />
+                <span className="text-sm text-slate-500 whitespace-nowrap">만원</span>
+              </div>
+            ) : (
+              car.trims.length > 1 && (
+                <div className="grid grid-cols-2 gap-2">
+                  {car.trims.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setTrimId(t.id)}
+                      className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
+                        trimId === t.id
+                          ? "border-blue-500 bg-blue-50 text-blue-700"
+                          : "border-slate-200 text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="font-medium">{t.label}</div>
+                      <div className="text-xs text-slate-400">{t.price.toLocaleString()}만원</div>
+                    </button>
+                  ))}
+                </div>
+              )
+            )}
+          </div>
+
+          {/* 추가 옵션 */}
+          {availableOptions.length > 0 && (
             <div>
-              <label className="text-sm font-medium text-slate-700 mb-1.5 block">트림 (신차가 기준)</label>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                추가 옵션 (신차가에 +, 중고가에는 50% 잔존 가정)
+              </label>
               <div className="grid grid-cols-2 gap-2">
-                {car.trims.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setTrimId(t.id)}
-                    className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
-                      trimId === t.id
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                        : "border-slate-200 text-slate-600 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="font-medium">{t.label}</div>
-                    <div className="text-xs text-slate-400">{t.price.toLocaleString()}만원</div>
-                  </button>
-                ))}
+                {availableOptions.map((o) => {
+                  const checked = selectedOptions.includes(o.id);
+                  return (
+                    <button
+                      key={o.id}
+                      onClick={() => toggleOption(o.id)}
+                      className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
+                        checked
+                          ? "border-blue-500 bg-blue-50 text-blue-700"
+                          : "border-slate-200 text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="font-medium">{o.label}</div>
+                      <div className="text-xs text-slate-400">
+                        신차가 +{o.newPrice}만원 → 잔존 +{Math.round(o.newPrice * OPTION_RETENTION)}만원
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* 추가 옵션 */}
+          {/* 제조년월 */}
           <div>
             <label className="text-sm font-medium text-slate-700 mb-1.5 block">
-              추가 옵션 (신차가에 +, 중고가에는 50% 잔존 가정)
+              제조년월{" "}
+              <span className="text-blue-600 font-semibold">
+                ({ageYears < 0.1 ? "신차" : `${Math.floor(ageYears)}년 ${Math.round((ageYears % 1) * 12)}개월`})
+              </span>
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {EXTRA_OPTIONS.map((o) => {
-                const checked = selectedOptions.includes(o.id);
-                return (
-                  <button
-                    key={o.id}
-                    onClick={() => toggleOption(o.id)}
-                    className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
-                      checked
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                        : "border-slate-200 text-slate-600 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="font-medium">{o.label}</div>
-                    <div className="text-xs text-slate-400">
-                      신차가 +{o.newPrice}만원 → 잔존 +{Math.round(o.newPrice * OPTION_RETENTION)}만원
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 연식 */}
-          <div>
-            <label className="text-sm font-medium text-slate-700 mb-1.5 block">
-              사용 연수: <span className="text-blue-600 font-semibold">{year}년</span>
-            </label>
-            <input
-              type="range" min="0" max="16" value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-              className="w-full accent-blue-600"
-            />
-            <div className="flex justify-between text-xs text-slate-400 mt-1">
-              <span>신차</span>
-              <span>16년</span>
+              <select
+                value={mfgYear}
+                onChange={(e) => setMfgYear(Number(e.target.value))}
+                className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"
+              >
+                {Array.from({ length: THIS_YEAR - 2005 + 1 }, (_, i) => THIS_YEAR - i).map((y) => (
+                  <option key={y} value={y}>{y}년</option>
+                ))}
+              </select>
+              <select
+                value={mfgMonth}
+                onChange={(e) => setMfgMonth(Number(e.target.value))}
+                className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>{m}월</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -523,7 +618,7 @@ export default function App() {
             />
             <div className="flex justify-between text-xs text-slate-400 mt-1">
               <span>0km</span>
-              <span>표준: {(Math.max(year, 1) * STANDARD_KM_PER_YEAR).toLocaleString()}km</span>
+              <span>표준: {(Math.max(ageYears, 1) * STANDARD_KM_PER_YEAR).toLocaleString()}km</span>
               <span>250,000km</span>
             </div>
           </div>
@@ -556,19 +651,34 @@ export default function App() {
             <TrendingDown className="w-5 h-5 text-slate-500" />
             <h2 className="font-semibold text-slate-800">감가 단계별 내역</h2>
           </div>
-          <div className="space-y-2 text-sm">
-            <Row label={`신차가 기준 (${car.name} ${trim.label})`} value={`${fmt(result.basePrice)} 만원`} />
-            <Row label={`연식 감가 (${year}년, 적용률 ${(result.ageRate * 100).toFixed(0)}%)`} value={`${fmt(result.afterAge)} 만원`} />
-            <Row label={`주행거리 보정 (${result.mileageAdj >= 0 ? "+" : ""}${(result.mileageAdj * 100).toFixed(1)}%)`} value={`${fmt(result.afterMileage)} 만원`} />
-            <Row label={`사고 이력 감가 (-${(result.accidentDeduct * 100).toFixed(0)}%)`} value={`${fmt(result.afterAccident)} 만원`} />
-            <Row label="추가 옵션 잔존가치 (+)" value={`${fmt(result.optionResidual)} 만원`} />
-            <Row label="안전마진 차감 (-5%, 협상 버퍼)" value={`${fmt(result.afterOptions - result.minPrice)} 만원`} />
-          </div>
+          {!result ? (
+            <p className="text-sm text-slate-400">신차가를 입력해주세요.</p>
+          ) : (
+            <>
+              <div className="space-y-2 text-sm">
+                <Row
+                  label={`신차가 기준 (${useCustomPrice ? "직접 입력" : `${car.name} ${trim.label}`})`}
+                  value={`${fmt(result.basePrice)} 만원`}
+                />
+                <Row
+                  label={`연식 감가 (${Math.floor(ageYears)}년 ${Math.round((ageYears % 1) * 12)}개월, 잔존율 ${(result.ageRate * 100).toFixed(0)}%)`}
+                  value={`${fmt(result.afterAge)} 만원`}
+                />
+                <Row
+                  label={`주행거리 보정 (${result.mileageAdj >= 0 ? "+" : ""}${(result.mileageAdj * 100).toFixed(1)}%)`}
+                  value={`${fmt(result.afterMileage)} 만원`}
+                />
+                <Row label={`사고 이력 감가 (-${(result.accidentDeduct * 100).toFixed(0)}%)`} value={`${fmt(result.afterAccident)} 만원`} />
+                <Row label="추가 옵션 잔존가치 (+)" value={`${fmt(result.optionResidual)} 만원`} />
+                <Row label="안전마진 차감 (-5%, 협상 버퍼)" value={`${fmt(result.afterOptions - result.minPrice)} 만원`} />
+              </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-100">
-            <div className="text-xs text-slate-400 mb-1">최소 방어 가격 (이 가격 이하로는 판매 비권장)</div>
-            <div className="text-3xl font-bold text-blue-600">{fmt(result.minPrice)} 만원</div>
-          </div>
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <div className="text-xs text-slate-400 mb-1">최소 방어 가격 (이 가격 이하로는 판매 비권장)</div>
+                <div className="text-3xl font-bold text-blue-600">{fmt(result.minPrice)} 만원</div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="mt-4 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-800">
