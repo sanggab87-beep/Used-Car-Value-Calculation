@@ -12,14 +12,17 @@ const INSURANCE_FACTORS = {
   gt10:  { none: 0.72,one: 1.1, multi: 1.65}, // 10년+
 };
 
-// 차량 기본요율 (차량가 대비 %)
-// 실제 보험사는 차량별 손해율 통계 기반으로 산정
-function getBaseRate(car) {
-  if (["BMW", "벤츠"].includes(car.brand)) return 0.033; // 수입차: 부품비 높음
-  if (car.brand === "테슬라") return 0.030;              // 테슬라: 수리비 높음
-  if (car.carType === "경차") return 0.019;              // 경차: 차량가 낮고 수리비 낮음
-  if (["제네시스"].includes(car.brand)) return 0.028;    // 고급 국산
-  return 0.025;                                          // 일반 국산
+// 보험료 = 고정 기본료 + 차량가 × 자차요율 × 할인할증계수
+// 고정 기본료: 대인/대물/자손/의무보험 등 차량가 무관 부분 (~25만원)
+// 자차요율: 차종별 수리비 수준 반영 (보험개발원 손해율 기반 추정)
+const BASE_FIXED = 25; // 만원
+
+function getSelfDamageRate(car) {
+  if (["BMW", "벤츠"].includes(car.brand)) return 0.0090; // 수입차: 부품·공임 높음
+  if (car.brand === "테슬라") return 0.0085;              // 테슬라: 수리 어렵고 비쌈
+  if (car.carType === "경차") return 0.0050;              // 경차: 수리비 낮음
+  if (car.brand === "제네시스") return 0.0075;            // 고급 국산
+  return 0.0060;                                          // 일반 국산
 }
 
 const EXPERIENCE_OPTIONS = [
@@ -72,12 +75,12 @@ export default function BuyerTab() {
     const acquisitionTax = calcAcquisitionTax(price, car);
     const carTax = calcCarTax(car);
 
-    const baseRate = getBaseRate(car);
+    const selfDamageRate = getSelfDamageRate(car);
     const factor = INSURANCE_FACTORS[experience][accidentHistory];
-    const insEstimate = Math.round(price * baseRate * factor);
-    // ±15% 오차 범위
-    const insMin = Math.round(insEstimate * 0.85);
-    const insMax = Math.round(insEstimate * 1.15);
+    const insEstimate = Math.round(BASE_FIXED + price * selfDamageRate * factor);
+    // ±20% 오차 범위 (고정 부분 비중 때문에 변동폭 상대적으로 작음)
+    const insMin = Math.round(insEstimate * 0.80);
+    const insMax = Math.round(insEstimate * 1.20);
 
     const firstYearTotal = price + acquisitionTax + carTax + insEstimate;
     const fiveYearTotal = firstYearTotal + (carTax + insEstimate) * 4;
@@ -203,7 +206,7 @@ export default function BuyerTab() {
               <Row
                 label="자동차 보험료 추정 (연간)"
                 value={`약 ${fmt(result.insEstimate)} 만원`}
-                sub={`범위 ${fmt(result.insMin)}~${fmt(result.insMax)}만원 · 할인할증 계수 ${result.factor.toFixed(2)}× 적용`}
+                sub={`범위 ${fmt(result.insMin)}~${fmt(result.insMax)}만원 · 자차 할인할증 ${result.factor.toFixed(2)}× · 고정료 포함`}
               />
             </div>
 
