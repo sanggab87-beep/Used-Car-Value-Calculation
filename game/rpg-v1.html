@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>티니핑 어드벤처: 거울의 성</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" />
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{background:#100a20;color:#fff;font-family:"Noto Sans KR",system-ui,sans-serif;
+    display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none;user-select:none;}
+  #wrap{position:relative;display:flex;flex-direction:column;align-items:center;}
+  canvas{display:block;border-radius:14px;background:#5aa86a;box-shadow:0 16px 50px rgba(0,0,0,.55);}
+  /* 조작 패드 (캔버스 아래) */
+  #pad{width:100%;display:flex;justify-content:space-between;align-items:center;padding:10px 16px 2px;}
+  .dpad{position:relative;width:126px;height:126px;}
+  .dbtn{position:absolute;width:42px;height:42px;background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.22);border-radius:10px;display:flex;align-items:center;
+    justify-content:center;color:#fff;font-size:17px;}
+  .dbtn:active{background:rgba(255,255,255,.3);}
+  #up{left:42px;top:0;} #down{left:42px;bottom:0;} #left{left:0;top:42px;} #right{right:0;top:42px;}
+  .abtns{display:flex;gap:12px;align-items:center;}
+  .rbtn{width:56px;height:56px;border-radius:50%;border:none;font-family:"Jua",sans-serif;
+    font-size:20px;color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.3);}
+  #a{background:linear-gradient(180deg,#ff9ecf,#ff5c9a);}
+  #b{background:linear-gradient(180deg,#9ab6ff,#5c7aff);width:46px;height:46px;font-size:16px;}
+  .rbtn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.3);}
+  #sound{position:absolute;top:8px;right:8px;font-size:16px;background:rgba(0,0,0,.3);border:none;
+    border-radius:8px;padding:3px 7px;color:#fff;z-index:6;}
+  #hint{position:absolute;top:8px;left:10px;font-size:11px;color:rgba(255,255,255,.8);
+    background:rgba(0,0,0,.3);padding:3px 8px;border-radius:8px;font-family:"Jua",sans-serif;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="cv"></canvas>
+  <div id="hint">티니핑 어드벤처</div>
+  <button id="sound" aria-label="소리">🔊</button>
+  <div id="pad">
+    <div class="dpad">
+      <div class="dbtn" id="up">▲</div>
+      <div class="dbtn" id="down">▼</div>
+      <div class="dbtn" id="left">◀</div>
+      <div class="dbtn" id="right">▶</div>
+    </div>
+    <div class="abtns">
+      <button class="rbtn" id="b">B</button>
+      <button class="rbtn" id="a">A</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const TILE = 32, VW = 12, VH = 13;
+  const BASE_W = VW*TILE, BASE_H = VH*TILE + 4;
+  const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+  const hintEl = document.getElementById("hint");
+
+  function resize(){
+    const dpr = Math.min(window.devicePixelRatio||1, 2);
+    cv.width=BASE_W*dpr; cv.height=BASE_H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.imageSmoothingEnabled=false;
+    const scale=Math.min(window.innerWidth/BASE_W, (window.innerHeight-158)/BASE_H);
+    cv.style.width=BASE_W*scale+"px"; cv.style.height=BASE_H*scale+"px";
+    document.getElementById("wrap").style.width=BASE_W*scale+"px";
+  }
+  addEventListener("resize",resize); resize();
+
+  // ── 사운드 ──
+  const S={on:true,ctx:null};
+  function initAudio(){ if(!S.ctx){ try{ S.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }
+  function blip(f,d=0.08,t="square",v=0.12,to=null){ if(!S.on||!S.ctx)return;
+    const n=S.ctx.currentTime,o=S.ctx.createOscillator(),g=S.ctx.createGain();
+    o.type=t;o.frequency.setValueAtTime(f,n); if(to)o.frequency.exponentialRampToValueAtTime(to,n+d);
+    g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(0.0001,n+d);
+    o.connect(g);g.connect(S.ctx.destination);o.start(n);o.stop(n+d); }
+  const sfx={ step(){blip(220,0.05,"square",0.05);}, talk(){blip(520,0.05,"triangle",0.09,640);},
+    sel(){blip(700,0.05,"square",0.08);}, hit(){blip(160,0.14,"sawtooth",0.14,80);},
+    magic(){blip(700,0.2,"sine",0.12,1500);}, heal(){blip(600,0.15,"triangle",0.11,1000);},
+    win(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>blip(f,0.18,"triangle",0.12),i*120));},
+    lose(){[400,300,200].forEach((f,i)=>setTimeout(()=>blip(f,0.25,"sawtooth",0.12),i*140));},
+    enc(){blip(120,0.3,"square",0.16,60);} };
+  document.getElementById("sound").addEventListener("click",()=>{S.on=!S.on;
+    document.getElementById("sound").textContent=S.on?"🔊":"🔇";initAudio();});
+
+  // ── 스프라이트 교체 시스템 ──
+  // assets/ 폴더에 파일을 넣으면 실제 이미지, 없으면 fallback 그림 사용
+  const ASSETS={ romi:"assets/romi.png", hachuping:"assets/hachuping.png",
+    diana:"assets/diana.png", eclipse:"assets/eclipse.png",
+    royal:"assets/royal.png", darkbit:"assets/darkbit.png" };
+  const IMG={};
+  for(const k in ASSETS){ const im=new Image(); im._ok=false;
+    im.onload=()=>im._ok=true; im.onerror=()=>im._ok=false; im.src=ASSETS[k]; IMG[k]=im; }
+  // 이미지가 있으면 정사각 영역에 그리고, 없으면 fallback 콜백
+  function sprite(key,x,y,size,fallback){
+    const im=IMG[key];
+    if(im && im._ok){ ctx.drawImage(im,x-size/2,y-size,size,size); }
+    else { ctx.save(); ctx.translate(x,y-size/2); fallback(size); ctx.restore(); }
+  }
+
+  // ── fallback 아트 (원본 캐릭터 대체용, 내가 그린 오리지널) ──
+  function eyeF(x,y,rx,ry,mid,lo){
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.ellipse(x,y,rx,ry,0,0,7); ctx.fill();
+    ctx.fillStyle=mid; ctx.beginPath(); ctx.ellipse(x,y+ry*0.12,rx*0.8,ry*0.85,0,0,7); ctx.fill();
+    ctx.fillStyle="#3a2340"; ctx.beginPath(); ctx.ellipse(x,y+ry*0.2,rx*0.4,ry*0.5,0,0,7); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.ellipse(x-rx*0.35,y-ry*0.3,rx*0.3,ry*0.34,0,0,7); ctx.fill();
+  }
+  function heartF(x,y,s,c){ ctx.save();ctx.translate(x,y);ctx.scale(s/16,s/16);
+    ctx.beginPath();ctx.moveTo(0,4);ctx.bezierCurveTo(-9,-6,-17,5,0,16);ctx.bezierCurveTo(17,5,9,-6,0,4);
+    ctx.closePath();ctx.fillStyle=c;ctx.fill();ctx.restore(); }
+  function crownF(x,y,w,c){ ctx.fillStyle=c;ctx.beginPath();
+    ctx.moveTo(x-w,y);ctx.lineTo(x-w*0.5,y-w*0.9);ctx.lineTo(x,y-w*0.25);
+    ctx.lineTo(x+w*0.5,y-w*0.9);ctx.lineTo(x+w,y);ctx.closePath();ctx.fill(); }
+  function blushF(x,y,r){ ctx.fillStyle="rgba(255,140,180,.5)";ctx.beginPath();ctx.ellipse(x,y,r,r*0.66,0,0,7);ctx.fill(); }
+
+  function fRomi(s){ const k=s/150;
+    ctx.scale(k,k);
+    ctx.fillStyle="#ff9dcf"; ctx.beginPath();ctx.ellipse(-46,10,16,30,0.35,0,7);ctx.fill();
+    ctx.beginPath();ctx.ellipse(46,10,16,30,-0.35,0,7);ctx.fill();
+    ctx.fillStyle="#ff6fae";ctx.beginPath();ctx.moveTo(-30,60);ctx.quadraticCurveTo(0,34,30,60);ctx.lineTo(30,74);ctx.lineTo(-30,74);ctx.closePath();ctx.fill();
+    const fg=ctx.createRadialGradient(0,-4,6,0,0,44);fg.addColorStop(0,"#fff6fb");fg.addColorStop(1,"#ffe6f1");
+    ctx.fillStyle=fg;ctx.beginPath();ctx.arc(0,-2,40,0,7);ctx.fill();
+    ctx.fillStyle="#ff9dcf";ctx.beginPath();ctx.moveTo(-40,-4);ctx.quadraticCurveTo(-42,-40,0,-42);
+    ctx.quadraticCurveTo(42,-40,40,-4);ctx.quadraticCurveTo(22,-20,10,-6);ctx.quadraticCurveTo(0,-22,-10,-6);
+    ctx.quadraticCurveTo(-22,-20,-40,-4);ctx.closePath();ctx.fill();
+    crownF(0,-34,13,"#ffd36b");
+    eyeF(-16,6,10,13,"#ff7ab8","#c94f8e"); eyeF(16,6,10,13,"#ff7ab8","#c94f8e");
+    blushF(-26,18,7); blushF(26,18,7);
+    ctx.strokeStyle="#c94f7a";ctx.lineWidth=2.4;ctx.lineCap="round";
+    ctx.beginPath();ctx.arc(0,22,6,0.15*Math.PI,0.85*Math.PI);ctx.stroke();
+  }
+  function fPing(s,col,after){ const k=s/150; ctx.scale(k,k);
+    const gl=ctx.createRadialGradient(0,0,10,0,0,50);gl.addColorStop(0,col.glow);gl.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=gl;ctx.beginPath();ctx.arc(0,0,50,0,7);ctx.fill();
+    const bg=ctx.createRadialGradient(-10,-14,6,0,0,42);bg.addColorStop(0,col.hi);bg.addColorStop(1,col.lo);
+    ctx.fillStyle=bg;ctx.beginPath();ctx.arc(0,4,38,0,7);ctx.fill();
+    eyeF(-13,0,9,12,col.mid,col.lo2); eyeF(13,0,9,12,col.mid,col.lo2);
+    blushF(-24,12,6.5); blushF(24,12,6.5);
+    ctx.strokeStyle="#8a3a5a";ctx.lineWidth=2.2;ctx.lineCap="round";
+    ctx.beginPath();ctx.arc(0,16,5,0.15*Math.PI,0.85*Math.PI);ctx.stroke();
+    if(after)after();
+  }
+  function fHachu(s){ fPing(s,{hi:"#ff9ec9",lo:"#ff5c9a",glow:"rgba(255,120,180,.55)",mid:"#ff6f9e",lo2:"#c33c6e"},
+    ()=>{ heartF(0,-40,20,"#ff3d8a"); }); }
+  function fRoyal(s){ fPing(s,{hi:"#a9d4ff",lo:"#5c9aff",glow:"rgba(120,170,255,.5)",mid:"#5c9aff",lo2:"#2f5fc9"},
+    ()=>{ crownF(0,-42,15,"#ffd36b"); }); }
+  function fDark(s){ const k=s/150; ctx.scale(k,k);
+    const gl=ctx.createRadialGradient(0,0,8,0,0,50);gl.addColorStop(0,"rgba(150,80,200,.5)");gl.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=gl;ctx.beginPath();ctx.arc(0,0,50,0,7);ctx.fill();
+    ctx.rotate(0.2);ctx.fillStyle="#3a1258";ctx.strokeStyle="#b06bff";ctx.lineWidth=3;
+    ctx.beginPath();for(let i=0;i<10;i++){const a=i/10*6.28,rr=38*(i%2?0.62:1);ctx[i?"lineTo":"moveTo"](Math.cos(a)*rr,Math.sin(a)*rr);}
+    ctx.closePath();ctx.fill();ctx.stroke();ctx.rotate(-0.2);
+    ctx.fillStyle="#ff5c7a";ctx.beginPath();ctx.ellipse(-11,-2,5,7,0,0,7);ctx.fill();ctx.beginPath();ctx.ellipse(11,-2,5,7,0,0,7);ctx.fill();
+    ctx.fillStyle="#160a2e";ctx.beginPath();ctx.arc(-11,0,2.4,0,7);ctx.fill();ctx.beginPath();ctx.arc(11,0,2.4,0,7);ctx.fill();
+    ctx.strokeStyle="#ff5c7a";ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(-6,16);ctx.quadraticCurveTo(0,10,6,16);ctx.stroke();
+  }
+  function fSister(s,light){ const k=s/150; ctx.scale(k,k);
+    const skin=light?"#fff2f8":"#efe4ff",hairHi=light?"#fff6d8":"#c9a3ff",hairLo=light?"#ffe08a":"#7b4fc9",
+      dress=light?"#eaf7ff":"#3a1f66",iris=light?"#ffcf6b":"#9a5cff",irisLo=light?"#c98a2e":"#5a2fa0",
+      aura=light?"rgba(255,230,140,.45)":"rgba(150,90,255,.45)";
+    const gl=ctx.createRadialGradient(0,0,10,0,0,58);gl.addColorStop(0,aura);gl.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=gl;ctx.beginPath();ctx.arc(0,4,58,0,7);ctx.fill();
+    ctx.fillStyle=dress;ctx.beginPath();ctx.moveTo(0,20);ctx.lineTo(30,66);ctx.lineTo(-30,66);ctx.closePath();ctx.fill();
+    ctx.fillStyle=hairLo;ctx.beginPath();ctx.ellipse(-30,20,15,34,0.2,0,7);ctx.fill();ctx.beginPath();ctx.ellipse(30,20,15,34,-0.2,0,7);ctx.fill();
+    ctx.fillStyle=skin;ctx.beginPath();ctx.arc(0,-6,30,0,7);ctx.fill();
+    ctx.fillStyle=hairHi;ctx.beginPath();ctx.moveTo(-30,-6);ctx.quadraticCurveTo(-32,-34,0,-34);
+    ctx.quadraticCurveTo(32,-34,30,-6);ctx.quadraticCurveTo(16,-16,8,-6);ctx.quadraticCurveTo(0,-18,-8,-6);
+    ctx.quadraticCurveTo(-16,-16,-30,-6);ctx.closePath();ctx.fill();
+    crownF(0,-28,12,light?"#ffe08a":"#c9a3ff");
+    eyeF(-12,-2,8,11,iris,irisLo); eyeF(12,-2,8,11,iris,irisLo);
+    blushF(-20,8,6); blushF(20,8,6);
+  }
+  const FALLBACK={ romi:fRomi, hachuping:fHachu, royal:fRoyal, darkbit:fDark,
+    diana:s=>fSister(s,true), eclipse:s=>fSister(s,false) };
+  function drawChar(key,x,y,size){ sprite(key,x,y,size,FALLBACK[key]); }
+
+  // 오버월드용 미니 캐릭터 (맵 위, 32px 타일)
+  function owChar(key,cx,cy,bob){
+    const im=IMG[key];
+    if(im&&im._ok){ const s=30; ctx.drawImage(im,cx-s/2,cy-s+bob,s,s); return; }
+    ctx.save(); ctx.translate(cx,cy-8+bob);
+    if(key==="romi"){
+      ctx.fillStyle="rgba(0,0,0,.15)";ctx.beginPath();ctx.ellipse(0,10,9,3,0,0,7);ctx.fill();
+      ctx.fillStyle="#ff6fae";ctx.fillRect(-6,0,12,10);ctx.fillStyle="#ffd0e8";ctx.fillRect(-6,4,12,2);
+      ctx.fillStyle="#ffe6f1";ctx.beginPath();ctx.arc(0,-6,8,0,7);ctx.fill();
+      ctx.fillStyle="#ff9dcf";ctx.beginPath();ctx.arc(0,-8,8,Math.PI,2*Math.PI);ctx.fill();
+      ctx.beginPath();ctx.arc(-8,-3,3,0,7);ctx.fill();ctx.beginPath();ctx.arc(8,-3,3,0,7);ctx.fill();
+      crownF(0,-13,4,"#ffd36b");
+      ctx.fillStyle="#4a2c4e";ctx.fillRect(-4,-6,2,3);ctx.fillRect(2,-6,2,3);
+    } else if(key==="royal"){
+      ctx.fillStyle="rgba(0,0,0,.15)";ctx.beginPath();ctx.ellipse(0,9,8,3,0,0,7);ctx.fill();
+      ctx.fillStyle="#5c9aff";ctx.beginPath();ctx.arc(0,0,9,0,7);ctx.fill();
+      crownF(0,-9,5,"#ffd36b");
+      ctx.fillStyle="#fff";ctx.fillRect(-4,-2,3,3);ctx.fillRect(1,-2,3,3);
+      ctx.fillStyle="#2a3a6a";ctx.fillRect(-3,-1,1.5,2);ctx.fillRect(2,-1,1.5,2);
+    } else { // darkbit
+      ctx.fillStyle="rgba(80,20,110,.3)";ctx.beginPath();ctx.ellipse(0,9,8,3,0,0,7);ctx.fill();
+      ctx.rotate(bob*0.1);ctx.fillStyle="#3a1258";ctx.strokeStyle="#b06bff";ctx.lineWidth=1.5;
+      ctx.beginPath();for(let i=0;i<8;i++){const a=i/8*6.28,rr=9*(i%2?0.6:1);ctx[i?"lineTo":"moveTo"](Math.cos(a)*rr,Math.sin(a)*rr);}
+      ctx.closePath();ctx.fill();ctx.stroke();ctx.rotate(-bob*0.1);
+      ctx.fillStyle="#ff5c7a";ctx.fillRect(-3,-2,2,2);ctx.fillRect(1,-2,2,2);
+    }
+    ctx.restore();
+  }
+
+  // ── 맵 ──
+  const RAW=[
+    "###############",
+    "#......=......#",
+    "#.H....=....H.#",
+    "#......=......#",
+    "#..gg..=..gg..#",
+    "#..gg..=..gg..#",
+    "#......E......#",
+    "#......=......#",
+    "#......=......#",
+    "#.....N=......#",
+    "#......=......#",
+    "#......=S.....#",
+    "#......=......#",
+    "#......P......#",
+    "###############",
+  ];
+  const MW=RAW[0].length, MH=RAW.length;
+  const grid=[], entities={};
+  let playerStart={x:3,y:13};
+  for(let y=0;y<MH;y++){ grid[y]=[];
+    for(let x=0;x<MW;x++){ let c=RAW[y][x];
+      if(c==="P"){ playerStart={x,y}; c="."; }
+      else if(c==="N"){ entities[x+","+y]={type:"npc"}; c="="; }
+      else if(c==="E"){ entities[x+","+y]={type:"enemy",dead:false}; c="="; }
+      else if(c==="S"){ entities[x+","+y]={type:"sign"}; c="="; }
+      grid[y][x]=c;
+    }
+  }
+  const WALK=new Set([".","=","g"]);
+  function blocked(x,y){
+    if(x<0||y<0||x>=MW||y>=MH) return true;
+    if(!WALK.has(grid[y][x])) return true;
+    const e=entities[x+","+y];
+    if(e){ if(e.type==="enemy"&&e.dead) return false; return true; }
+    return false;
+  }
+
+  // ── 상태 ──
+  let mode="title"; // title | field | dialog | battle
+  const player={x:playerStart.x,y:playerStart.y,px:playerStart.x*TILE,py:playerStart.y*TILE,dir:"down",moving:false,fx:0,fy:0,t:0};
+  const cam={x:0,y:0};
+  let tAll=0, last=0, gateShown=false;
+
+  // 대화
+  const dlg={active:false, lines:[], i:0, shown:0, name:"", then:null};
+  function say(name, lines, then){ dlg.active=true; dlg.name=name; dlg.lines=lines; dlg.i=0; dlg.shown=0; dlg.then=then||null; mode="dialog"; sfx.talk(); }
+  function dlgAdvance(){
+    if(dlg.shown < dlg.lines[dlg.i].length){ dlg.shown=dlg.lines[dlg.i].length; return; } // 즉시 완성
+    dlg.i++;
+    if(dlg.i>=dlg.lines.length){ dlg.active=false; const t=dlg.then; dlg.then=null; mode="field"; if(t)t(); }
+    else { dlg.shown=0; sfx.talk(); }
+  }
+
+  // 전투
+  const battle={ enemy:null, php:30,pmp:10,phpMax:30,pmpMax:10, ehp:0,ehpMax:0,
+    queue:[], shown:0, then:null, awaiting:false, sel:0, flash:0, shake:0, result:null };
+  const ENEMIES={
+    darkbit:{ key:"darkbit", name:"어둠 조각", hp:26, atk:[3,6], gold:"길이 열렸다!" },
+  };
+  function bSay(lines, then){ battle.queue=lines.slice(); battle.shown=0; battle.then=then||null; battle.awaiting=false; }
+  function startBattle(enemyKey){
+    const e=ENEMIES[enemyKey]; battle.enemy=e; battle.ehp=e.hp; battle.ehpMax=e.hp;
+    battle.sel=0; battle.result=null; mode="battle"; sfx.enc();
+    bSay(["앗! "+e.name+"이(가) 나타났다!","로미와 하츄핑, 힘을 내자!"], ()=>{ battle.awaiting=true; });
+  }
+  const COMMANDS=[
+    {label:"사랑의 하트", act:"attack"},
+    {label:"하츄 매직", act:"magic"},
+    {label:"회복", act:"heal"},
+    {label:"도망", act:"flee"},
+  ];
+  function rnd(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+  function chooseCommand(i){
+    const c=COMMANDS[i]; battle.awaiting=false;
+    if(c.act==="attack"){ const d=rnd(5,8); battle.ehp=Math.max(0,battle.ehp-d); battle.flash=0.3; sfx.hit();
+      bSay([`로미의 사랑의 하트! ${d}의 데미지!`], afterPlayer); }
+    else if(c.act==="magic"){ if(battle.pmp<3){ bSay(["마나가 부족해!"],()=>battle.awaiting=true); return; }
+      battle.pmp-=3; const d=rnd(9,14); battle.ehp=Math.max(0,battle.ehp-d); battle.flash=0.4; sfx.magic();
+      bSay([`하츄핑의 러블리 매직! ${d}의 데미지!`], afterPlayer); }
+    else if(c.act==="heal"){ if(battle.pmp<4){ bSay(["마나가 부족해!"],()=>battle.awaiting=true); return; }
+      battle.pmp-=4; const h=rnd(8,12); battle.php=Math.min(battle.phpMax,battle.php+h); sfx.heal();
+      bSay([`하츄핑이 회복 마법! HP ${h} 회복!`], enemyTurn); }
+    else if(c.act==="flee"){ if(Math.random()<0.5){ bSay(["무사히 도망쳤다!"], ()=>endBattle(false)); }
+      else { bSay(["도망칠 수 없었다!"], enemyTurn); } }
+  }
+  function afterPlayer(){ if(battle.ehp<=0){ sfx.win();
+      bSay([battle.enemy.name+"을(를) 물리쳤다!","✨ "+battle.enemy.gold], ()=>endBattle(true)); }
+    else enemyTurn(); }
+  function enemyTurn(){ const e=battle.enemy; const d=rnd(e.atk[0],e.atk[1]);
+    battle.php=Math.max(0,battle.php-d); battle.shake=0.3; sfx.hit();
+    bSay([e.name+"의 공격! "+d+"의 데미지!"], ()=>{
+      if(battle.php<=0){ sfx.lose();
+        bSay(["로미가 쓰러졌다…","하지만 하츄핑이 지켜줬어!","(HP를 회복하고 마을로 돌아간다)"], ()=>endBattle("faint")); }
+      else battle.awaiting=true;
+    });
+  }
+  function endBattle(res){
+    if(res===true){ const key=battle.enemyMapKey; if(key&&entities[key]) entities[key].dead=true;
+      mode="field";
+      // 승리 후 스토리
+      say("나레이션",["어둠 조각이 사라지자 막혔던 길이 열렸다.","거울의 성으로 가는 길… 로미의 모험은 계속된다!"],null);
+    } else if(res==="faint"){ battle.php=battle.phpMax; battle.pmp=battle.pmpMax;
+      player.x=playerStart.x; player.y=playerStart.y; player.px=player.x*TILE; player.py=player.y*TILE; mode="field"; }
+    else { mode="field"; }
+  }
+
+  // ── 상호작용 ──
+  const DIR={down:[0,1],up:[0,-1],left:[-1,0],right:[1,0]};
+  function interact(){
+    const [dx,dy]=DIR[player.dir]; const fx=player.x+dx, fy=player.y+dy;
+    const e=entities[fx+","+fy];
+    if(!e) return;
+    if(e.type==="npc"){ say("로열 티니핑",[
+      "로미 언니, 큰일이야!","이클립스핑이 회담 열차를 습격해서","우리 로열 티니핑들이 뿔뿔이 흩어졌어…",
+      "다이아나핑 언니도 거울에 갇혔대!","길을 막은 어둠 조각을 물리치고","거울의 성으로 가줘. 하츄핑이 함께할 거야!"],null); }
+    else if(e.type==="sign"){ say("팻말",["← 하모니 마을 / 거울의 성 →","조심! 어둠 조각이 길을 막고 있음"],null); }
+    else if(e.type==="enemy" && !e.dead){ battle.enemyMapKey=fx+","+fy; startBattle("darkbit"); }
+  }
+
+  // ── 입력 ──
+  function tryMove(dir){
+    if(mode!=="field"||player.moving) return;
+    player.dir=dir; const [dx,dy]=DIR[dir]; const nx=player.x+dx, ny=player.y+dy;
+    if(blocked(nx,ny)) { sfx.step(); return; }
+    player.moving=true; player.t=0; player.fx=dx; player.fy=dy; sfx.step();
+  }
+  function pressA(){
+    initAudio();
+    if(mode==="title"){ mode="field"; say("나레이션",["프린세스 회담을 앞둔 어느 날,","거울의 성에서 어둠이 깨어났다…","로미와 하츄핑의 모험이 시작된다!"],null); return; }
+    if(mode==="dialog"){ dlgAdvance(); return; }
+    if(mode==="field"){ interact(); return; }
+    if(mode==="battle"){
+      if(battle.shown < (battle.queue[0]||"").length){ battle.shown=battle.queue[0].length; return; }
+      if(battle.queue.length){ battle.queue.shift(); battle.shown=0;
+        if(!battle.queue.length){ const t=battle.then; battle.then=null; if(t)t(); }
+        return; }
+      if(battle.awaiting){ sfx.sel(); chooseCommand(battle.sel); }
+    }
+  }
+  function pressB(){ if(mode==="dialog"){ dlgAdvance(); } }
+  function moveSel(dx,dy){ if(mode==="battle"&&battle.awaiting){ // 2x2 그리드
+      let i=battle.sel; const col=i%2, row=(i/2)|0;
+      let nc=Math.max(0,Math.min(1,col+dx)), nr=Math.max(0,Math.min(1,row+dy));
+      battle.sel=nr*2+nc; sfx.sel(); } }
+
+  function bind(id,fn){ const el=document.getElementById(id);
+    el.addEventListener("pointerdown",e=>{e.preventDefault();fn();}); }
+  bind("up",()=>{ tryMove("up"); moveSel(0,-1); });
+  bind("down",()=>{ tryMove("down"); moveSel(0,1); });
+  bind("left",()=>{ tryMove("left"); moveSel(-1,0); });
+  bind("right",()=>{ tryMove("right"); moveSel(1,0); });
+  bind("a",pressA); bind("b",pressB);
+  addEventListener("keydown",e=>{
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
+    if(e.key==="ArrowUp"){ tryMove("up"); moveSel(0,-1); }
+    else if(e.key==="ArrowDown"){ tryMove("down"); moveSel(0,1); }
+    else if(e.key==="ArrowLeft"){ tryMove("left"); moveSel(-1,0); }
+    else if(e.key==="ArrowRight"){ tryMove("right"); moveSel(1,0); }
+    else if(e.key==="z"||e.key==="Z"||e.key==="Enter"||e.key===" ") pressA();
+    else if(e.key==="x"||e.key==="X") pressB();
+  });
+  // 전투 커맨드 직접 탭
+  cv.addEventListener("pointerdown",e=>{
+    if(mode!=="battle"||!battle.awaiting) return;
+    const r=cv.getBoundingClientRect(); const mx=(e.clientX-r.left)/r.width*BASE_W, my=(e.clientY-r.top)/r.height*BASE_H;
+    if(my<BASE_H-86) return;
+    const col=mx<BASE_W/2?0:1, row=my<BASE_H-44?0:1; battle.sel=row*2+col; sfx.sel(); chooseCommand(battle.sel);
+  });
+
+  // ── 업데이트 ──
+  function update(dt){
+    tAll+=dt;
+    if(mode==="field"&&player.moving){
+      player.t+=dt*6.5;
+      if(player.t>=1){ player.t=1; player.moving=false; player.x+=player.fx; player.y+=player.fy;
+        player.px=player.x*TILE; player.py=player.y*TILE;
+        if(player.y<=1 && !gateShown){ gateShown=true;
+          say("나레이션",["거울의 성 입구에 도착했다!","다이아나핑이 갇힌 성이 눈앞에…","(체험판은 여기까지! 다음 편에 계속 ✨)"],null); }
+      }
+      else { player.px=(player.x+player.fx*player.t)*TILE; player.py=(player.y+player.fy*player.t)*TILE; }
+    }
+    // 카메라
+    cam.x=Math.max(0,Math.min(MW*TILE-BASE_W, player.px+TILE/2-BASE_W/2));
+    cam.y=Math.max(0,Math.min(MH*TILE-BASE_H, player.py+TILE/2-BASE_H/2));
+    if(battle.flash>0) battle.flash-=dt*2;
+    if(battle.shake>0) battle.shake-=dt*3;
+    // 대화 타이핑
+    if(mode==="dialog"&&dlg.active){ dlg.shown=Math.min(dlg.lines[dlg.i].length, dlg.shown+dt*38); }
+    if(mode==="battle"&&battle.queue.length){ battle.shown=Math.min(battle.queue[0].length, battle.shown+dt*40); }
+  }
+
+  // ── 렌더: 맵 ──
+  function tileColor(c){ return c==="="?"#e3c78a":c==="g"?"#3f8f52":"#66b06e"; }
+  function drawField(){
+    ctx.save(); ctx.translate(-Math.round(cam.x),-Math.round(cam.y));
+    const x0=Math.floor(cam.x/TILE), y0=Math.floor(cam.y/TILE);
+    for(let y=y0;y<=y0+VH+1&&y<MH;y++){ for(let x=x0;x<=x0+VW+1&&x<MW;x++){ if(x<0||y<0)continue;
+      const c=grid[y][x], px=x*TILE, py=y*TILE;
+      // 바닥
+      ctx.fillStyle= c==="="?"#e3c78a":"#66b06e"; ctx.fillRect(px,py,TILE,TILE);
+      if(c==="."||c==="g"){ ctx.fillStyle="#5ea567"; ctx.fillRect(px+4,py+20,3,3); ctx.fillRect(px+22,py+8,3,3); }
+      if(c==="="){ ctx.fillStyle="#d8b979"; ctx.fillRect(px,py,TILE,2); }
+      if(c==="g"){ ctx.fillStyle="#357a45"; for(let i=0;i<3;i++){ctx.fillRect(px+4+i*9,py+18,4,10);} }
+      if(c==="#"){ // 나무
+        ctx.fillStyle="#66b06e"; ctx.fillRect(px,py,TILE,TILE);
+        ctx.fillStyle="#7a4a2a"; ctx.fillRect(px+13,py+18,6,12);
+        ctx.fillStyle="#2f8a45"; ctx.beginPath();ctx.arc(px+16,py+13,12,0,7);ctx.fill();
+        ctx.fillStyle="#3fa055"; ctx.beginPath();ctx.arc(px+12,py+10,6,0,7);ctx.fill(); }
+      if(c==="H"){ // 집
+        ctx.fillStyle="#66b06e"; ctx.fillRect(px,py,TILE,TILE);
+        ctx.fillStyle="#f2e4c8"; ctx.fillRect(px+3,py+13,26,17);
+        ctx.fillStyle="#e0668a"; ctx.beginPath();ctx.moveTo(px+1,py+14);ctx.lineTo(px+16,py+2);ctx.lineTo(px+31,py+14);ctx.closePath();ctx.fill();
+        ctx.fillStyle="#a86a3a"; ctx.fillRect(px+13,py+21,7,9);
+        ctx.fillStyle="#8fd0ff"; ctx.fillRect(px+5,py+16,5,5);ctx.fillRect(px+22,py+16,5,5); }
+    }}
+    // 엔티티
+    const bob=Math.sin(tAll*4)*1.5;
+    for(const key in entities){ const [ex,ey]=key.split(",").map(Number); const e=entities[key];
+      const cx=ex*TILE+TILE/2, cy=ey*TILE+TILE;
+      if(e.type==="npc") owChar("royal",cx,cy,bob);
+      else if(e.type==="enemy"&&!e.dead) owChar("darkbit",cx,cy,bob);
+      else if(e.type==="sign"){ ctx.fillStyle="#a86a3a";ctx.fillRect(cx-2,cy-14,4,12);
+        ctx.fillStyle="#f2e4c8";ctx.fillRect(cx-9,cy-26,18,13);ctx.fillStyle="#b98a4a";ctx.strokeRect&&0;
+        ctx.fillStyle="#8a5a2a";ctx.fillRect(cx-7,cy-23,14,2);ctx.fillRect(cx-7,cy-19,14,2); }
+    }
+    // 플레이어
+    const pbob=player.moving?Math.abs(Math.sin(player.t*Math.PI*2))*2:Math.sin(tAll*3)*1;
+    owChar("romi", player.px+TILE/2, player.py+TILE, pbob);
+    ctx.restore();
+  }
+
+  // ── 렌더: 대화창 ──
+  function drawDialogBox(name, text){
+    const bx=8, by=BASE_H-92, bw=BASE_W-16, bh=84;
+    ctx.fillStyle="rgba(20,10,32,.92)"; rr(bx,by,bw,bh,12); ctx.fill();
+    ctx.strokeStyle="#ff9ecf"; ctx.lineWidth=3; rr(bx,by,bw,bh,12); ctx.stroke();
+    if(name){ ctx.fillStyle="#ff5c9a"; rr(bx+12,by-13,name.length*15+20,24,8); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.font='15px Jua, sans-serif'; ctx.textAlign="left"; ctx.textBaseline="middle";
+      ctx.fillText(name, bx+22, by-1); }
+    ctx.fillStyle="#fff"; ctx.font='15px "Noto Sans KR", sans-serif'; ctx.textAlign="left"; ctx.textBaseline="top";
+    wrapText(text, bx+16, by+16, bw-32, 22);
+    if(Math.sin(tAll*6)>0){ ctx.fillStyle="#ff9ecf"; ctx.textAlign="right"; ctx.fillText("▼", bx+bw-16, by+bh-24); }
+  }
+  function wrapText(t,x,y,maxW,lh){ const chars=[...t]; let line="", yy=y;
+    for(const ch of chars){ const test=line+ch;
+      if(ctx.measureText(test).width>maxW){ ctx.fillText(line,x,yy); line=ch; yy+=lh; } else line=test; }
+    ctx.fillText(line,x,yy);
+  }
+  function rr(x,y,w,h,r){ ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath(); }
+
+  // ── 렌더: 전투 ──
+  function bar(x,y,w,frac,col){ ctx.fillStyle="rgba(0,0,0,.35)"; rr(x,y,w,8,4); ctx.fill();
+    ctx.fillStyle=col; rr(x,y,w*Math.max(0,frac),8,4); ctx.fill(); }
+  function drawBattle(){
+    // 배경
+    const g=ctx.createLinearGradient(0,0,0,BASE_H); g.addColorStop(0,"#3a2360");g.addColorStop(1,"#1a1030");
+    ctx.fillStyle=g; ctx.fillRect(0,0,BASE_W,BASE_H);
+    ctx.save();
+    if(battle.shake>0) ctx.translate((Math.random()-0.5)*6,(Math.random()-0.5)*6);
+    // 적
+    ctx.save(); if(battle.flash>0){ ctx.globalAlpha=Math.sin(tAll*30)>0?0.4:1; }
+    drawChar(battle.enemy.key, BASE_W-96, 130, 96); ctx.restore();
+    // 적 정보
+    ctx.fillStyle="rgba(20,10,32,.8)"; rr(12,20,180,40,8); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.font='15px Jua, sans-serif'; ctx.textAlign="left"; ctx.textBaseline="middle";
+    ctx.fillText(battle.enemy.name, 22, 34); bar(22,44,158,battle.ehp/battle.ehpMax,"#ff6f91");
+    // 아군 (로미 + 하츄핑)
+    drawChar("hachuping", 70, 250, 52);
+    drawChar("romi", 118, 268, 104);
+    // 아군 정보
+    ctx.fillStyle="rgba(20,10,32,.8)"; rr(BASE_W-196,196,184,52,8); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.font='15px Jua, sans-serif'; ctx.textAlign="left";
+    ctx.fillText("로미 ♥ 하츄핑", BASE_W-186, 210);
+    ctx.font='11px "Noto Sans KR"'; ctx.fillStyle="#a8f0ff";
+    ctx.fillText("HP", BASE_W-186, 226); bar(BASE_W-166,222,120,battle.php/battle.phpMax,"#5ce08a");
+    ctx.fillStyle="#c79bff"; ctx.fillText("MP", BASE_W-186, 240); bar(BASE_W-166,236,120,battle.pmp/battle.pmpMax,"#9a7aff");
+    ctx.restore();
+
+    // 하단 박스
+    const by=BASE_H-92, bh=84;
+    ctx.fillStyle="rgba(20,10,32,.94)"; rr(8,by,BASE_W-16,bh,12); ctx.fill();
+    ctx.strokeStyle="#9ab6ff"; ctx.lineWidth=3; rr(8,by,BASE_W-16,bh,12); ctx.stroke();
+    if(battle.awaiting){
+      // 2x2 커맨드
+      ctx.font='15px Jua, sans-serif'; ctx.textBaseline="middle";
+      for(let i=0;i<4;i++){ const col=i%2,row=(i/2)|0; const cx=20+col*(BASE_W/2-14), cy=by+16+row*34;
+        const sel=battle.sel===i;
+        ctx.fillStyle=sel?"#ff5c9a":"rgba(255,255,255,.08)"; rr(cx,cy,BASE_W/2-30,28,7); ctx.fill();
+        ctx.fillStyle=sel?"#fff":"#e8d8f0"; ctx.textAlign="left";
+        ctx.fillText((sel?"▶ ":"  ")+COMMANDS[i].label, cx+8, cy+15); }
+    } else {
+      ctx.fillStyle="#fff"; ctx.font='15px "Noto Sans KR"'; ctx.textAlign="left"; ctx.textBaseline="top";
+      const msg=(battle.queue[0]||"").slice(0,Math.floor(battle.shown));
+      wrapText(msg, 22, by+18, BASE_W-44, 22);
+      if(battle.shown>=(battle.queue[0]||"").length && Math.sin(tAll*6)>0){
+        ctx.fillStyle="#9ab6ff"; ctx.textAlign="right"; ctx.fillText("▼", BASE_W-24, by+bh-24); }
+    }
+  }
+
+  // ── 렌더: 타이틀 ──
+  function drawTitle(){
+    const g=ctx.createLinearGradient(0,0,0,BASE_H); g.addColorStop(0,"#3a2360");g.addColorStop(1,"#170e2e");
+    ctx.fillStyle=g; ctx.fillRect(0,0,BASE_W,BASE_H);
+    for(let i=0;i<24;i++){ const x=(i*71.3)%BASE_W,y=(i*53.7+tAll*10)%BASE_H;
+      ctx.globalAlpha=0.4+0.3*Math.sin(tAll*2+i);ctx.fillStyle="#fff";ctx.fillRect(x,y,2,2);}
+    ctx.globalAlpha=1;
+    drawChar("romi", BASE_W/2-40, 180, 96);
+    drawChar("hachuping", BASE_W/2+56, 156, 60);
+    ctx.textAlign="center";
+    ctx.fillStyle="#fff"; ctx.font='30px Jua, sans-serif'; ctx.textBaseline="middle";
+    ctx.fillText("티니핑 어드벤처", BASE_W/2, 240);
+    ctx.fillStyle="#ffd36b"; ctx.font='16px Jua, sans-serif';
+    ctx.fillText("✧ 거울의 성 ✧", BASE_W/2, 268);
+    if(Math.sin(tAll*3)>-0.3){ ctx.fillStyle="#ff9ecf"; ctx.font='16px Jua, sans-serif';
+      ctx.fillText("A 버튼을 눌러 시작", BASE_W/2, 320); }
+    ctx.fillStyle="rgba(255,255,255,.5)"; ctx.font='11px "Noto Sans KR"';
+    ctx.fillText("방향키로 이동 · A로 대화/조사 · 오리지널 팬 게임", BASE_W/2, BASE_H-20);
+  }
+
+  // ── 루프 ──
+  function render(){
+    ctx.clearRect(0,0,BASE_W,BASE_H);
+    if(mode==="title"){ drawTitle(); return; }
+    if(mode==="battle"){ drawBattle(); return; }
+    drawField();
+    if(mode==="dialog"&&dlg.active){ drawDialogBox(dlg.name, dlg.lines[dlg.i].slice(0,Math.floor(dlg.shown))); }
+  }
+  function loop(ts){ const dt=Math.min(0.05,(ts-last)/1000||0); last=ts; update(dt); render(); requestAnimationFrame(loop); }
+
+  // 힌트 텍스트 모드 따라 갱신
+  setInterval(()=>{ hintEl.textContent = mode==="battle"?"⚔ 전투":mode==="title"?"티니핑 어드벤처":"🗺 하모니 마을"; },300);
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
