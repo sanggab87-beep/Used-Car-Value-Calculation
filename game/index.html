@@ -340,28 +340,35 @@
     ctx.restore();
   }
 
-  // ── 맵 (하모니 마을 허브) ──
-  const RAW=[
-    "###############","#......=......#","#.H....=....H.#","#......=......#",
-    "#..gg..=..gg..#","#..gg..=..gg..#","#......R......#","#......=......#",
-    "#......=......#","#.....N=......#","#......=......#","#......=S.....#",
-    "#......=......#","#......P......#","###############"];
-  const MW=RAW[0].length, MH=RAW.length, grid=[], entities={};
-  let playerStart={x:7,y:13};
-  for(let y=0;y<MH;y++){ grid[y]=[];
-    for(let x=0;x<MW;x++){ let c=RAW[y][x];
-      if(c==="P"){playerStart={x,y};c=".";}
-      else if(c==="N"){entities[x+","+y]={type:"npc"};c="=";}
-      else if(c==="R"){entities[x+","+y]={type:"gate"};c="=";} // 거울의 성 관문
-      else if(c==="S"){entities[x+","+y]={type:"sign"};c="=";}
-      grid[y][x]=c; } }
-  const WALK=new Set([".","=","g"]);
-  function blocked(x,y){ if(x<0||y<0||x>=MW||y>=MH)return true; if(!WALK.has(grid[y][x]))return true;
-    const e=entities[x+","+y]; if(e){ if(e.type==="gate"&&allCaught())return false; return true; } return false; }
+  // ── 마을 지도 (배경 이미지 + 자유 이동) ──
+  const MAPW=760, MAPH=570; // 지도 논리 크기 (4:3)
+  const townImg=new Image(); townImg._ok=false;
+  townImg.onload=()=>townImg._ok=true; townImg.onerror=()=>townImg._ok=false;
+  townImg.src=(window.__PING_IMG&&window.__PING_IMG.townmap)||"assets/townmap.png";
+
+  // 장소 (지도 비율 좌표). act: catch=에피소드 / dex=도감 / castle=거울의성 / talk=대사
+  const LANDMARKS=[
+    {no:"1", name:"하트로즈 베이커리", rx:0.44, ry:0.73, act:"talk", line:["달콤한 빵 냄새 가득한 하트로즈 베이커리!","갓 구운 하트빵 먹고 힘내자."]},
+    {no:"2", name:"중앙 놀이터 광장", rx:0.50, ry:0.52, act:"catch", line:["광장에서 티니핑의 기운이 느껴져!"]},
+    {no:"3", name:"시계탑", rx:0.66, ry:0.33, act:"talk", line:["땡— 땡— 하모니 마을의 시계탑.","약속 시간을 알려줘."]},
+    {no:"4", name:"하모니 학교", rx:0.84, ry:0.24, act:"talk", line:["티니핑 친구들이 다니는 하모니 학교!","오늘도 즐겁게 공부 중."]},
+    {no:"5", name:"옷가게", rx:0.26, ry:0.36, act:"talk", line:["예쁜 드레스가 가득한 옷가게.","프린세스 회담 옷을 골라볼까?"]},
+    {no:"6", name:"꽃집", rx:0.42, ry:0.22, act:"talk", line:["향긋한 꽃이 가득한 꽃집.","이슬핑이 좋아하겠다!"]},
+    {no:"7", name:"보석상", rx:0.74, ry:0.60, act:"talk", line:["반짝이는 보석이 가득한 보석상.","티아라에 어울릴 보석을 찾아보자."]},
+    {no:"8", name:"사진관", rx:0.58, ry:0.75, act:"talk", line:["추억을 남기는 사진관.","캐치한 티니핑과 찰칵!"]},
+    {no:"9", name:"빌라 단지", rx:0.31, ry:0.13, act:"talk", line:["아기자기한 빌라 단지.","티니핑들이 옹기종기 살아."]},
+    {no:"10", name:"마을 공원", rx:0.80, ry:0.77, act:"catch", line:["연못이 있는 마을 공원.","여기도 티니핑이 숨었을지 몰라!"]},
+    {no:"11", name:"강가 다리", rx:0.10, ry:0.45, act:"talk", line:["강을 건너는 나무 다리.","시원한 물소리가 들려."]},
+    {no:"12", name:"티니핑 아지트", rx:0.22, ry:0.84, act:"dex", line:["캐치한 티니핑들이 모여 사는 아지트!","도감을 열어볼게."]},
+    {no:"★", name:"거울의 성 입구", rx:0.51, ry:0.05, act:"castle", line:[]},
+  ];
+  LANDMARKS.forEach(l=>{ l.x=l.rx*MAPW; l.y=l.ry*MAPH; });
 
   // ── 상태 ──
   let mode="title"; // title|opening|field|dialog|battle|dex|ending
-  const player={x:playerStart.x,y:playerStart.y,px:playerStart.x*TILE,py:playerStart.y*TILE,dir:"down",moving:false,fx:0,fy:0,t:0};
+  const player={x:MAPW*0.50, y:MAPH*0.88, spd:135, moving:false};
+  const held={up:false,down:false,left:false,right:false};
+  let nearLM=null;
   const cam={x:0,y:0}; let tAll=0,last=0;
 
   const dlg={active:false,lines:[],i:0,shown:0,name:"",then:null};
@@ -440,20 +447,18 @@
   }
 
   // ── 상호작용 ──
-  const DIR={down:[0,1],up:[0,-1],left:[-1,0],right:[1,0]};
-  function interact(){ const [dx,dy]=DIR[player.dir]; const e=entities[(player.x+dx)+","+(player.y+dy)];
-    if(!e)return;
-    if(e.type==="npc"){ const n=nextTarget();
-      say("하츄핑", n?["다음 티니핑을 찾아보자!","'도감' 버튼을 눌러 ⭐ 표시된 티니핑을 캐치하러 가!"]
-        :["티니핑을 모두 캐치했어!","위쪽 보라색 관문으로 가서 거울의 성으로!"],null); }
-    else if(e.type==="sign"){ say("팻말",["하모니 마을 · 도감 버튼으로 티니핑 캐치!","위쪽 관문 → 거울의 성 (티니핑 모두 캐치 후 열림)"],null); }
-    else if(e.type==="gate"){ if(allCaught()) enterCastle(); else say("관문",["굳게 닫혀 있다…","흩어진 티니핑을 모두 캐치하면 열릴 것 같다."],null); }
+  function interact(){
+    if(!nearLM) return; const l=nearLM;
+    if(l.act==="castle"){ if(allCaught()) enterCastle();
+      else say("거울의 성 입구",["굳게 닫혀 있다…","흩어진 프린세스 티니핑을 모두 캐치하면 열릴 거야."],null); return; }
+    if(l.act==="dex"){ say(l.name,l.line,()=>openDex()); return; }
+    if(l.act==="catch"){ const n=nextTarget();
+      if(n) say(l.name,l.line,()=>startEpisode(n));
+      else say(l.name,["여긴 이제 평화로워.","남은 건 거울의 성뿐이야!"],null); return; }
+    say(l.name,l.line,null);
   }
 
   // ── 입력 ──
-  function tryMove(dir){ if(mode!=="field"||player.moving)return; player.dir=dir;
-    const [dx,dy]=DIR[dir],nx=player.x+dx,ny=player.y+dy;
-    if(blocked(nx,ny)){sfx.step();return;} player.moving=true;player.t=0;player.fx=dx;player.fy=dy;sfx.step(); }
   function pressA(){ initAudio();
     if(mode==="title"){ mode="opening"; openIdx=0; openShown=0; return; }
     if(mode==="opening"){ if(openShown<OPENING[openIdx].text.length){openShown=OPENING[openIdx].text.length;return;}
@@ -469,14 +474,26 @@
   function pressB(){ if(mode==="field"){ openDex(); } else if(mode==="dialog"){ dlgAdvance(); } }
   function moveSel(dx,dy){ if(mode==="battle"&&battle.awaiting){ const col=battle.sel%2,row=(battle.sel/2)|0;
     battle.sel=Math.max(0,Math.min(1,row+dy))*2+Math.max(0,Math.min(1,col+dx)); sfx.sel(); } }
-  function bind(id,fn){ document.getElementById(id).addEventListener("pointerdown",e=>{e.preventDefault();fn();}); }
-  bind("up",()=>{tryMove("up");moveSel(0,-1);}); bind("down",()=>{tryMove("down");moveSel(0,1);});
-  bind("left",()=>{tryMove("left");moveSel(-1,0);}); bind("right",()=>{tryMove("right");moveSel(1,0);});
-  bind("a",pressA); bind("b",pressB);
+  const DVEC={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+  function padDown(d){ initAudio(); if(mode==="battle"){ const m=DVEC[d]; moveSel(m[0],m[1]); return; } held[d]=true; }
+  function padUp(d){ held[d]=false; }
+  ["up","down","left","right"].forEach(d=>{ const el=document.getElementById(d);
+    el.addEventListener("pointerdown",e=>{e.preventDefault();padDown(d);});
+    el.addEventListener("pointerup",e=>{e.preventDefault();padUp(d);});
+    el.addEventListener("pointerleave",()=>padUp(d)); el.addEventListener("pointercancel",()=>padUp(d)); });
+  document.getElementById("a").addEventListener("pointerdown",e=>{e.preventDefault();pressA();});
+  document.getElementById("b").addEventListener("pointerdown",e=>{e.preventDefault();pressB();});
   addEventListener("keydown",e=>{ if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();
-    if(e.key==="ArrowUp"){tryMove("up");moveSel(0,-1);} else if(e.key==="ArrowDown"){tryMove("down");moveSel(0,1);}
-    else if(e.key==="ArrowLeft"){tryMove("left");moveSel(-1,0);} else if(e.key==="ArrowRight"){tryMove("right");moveSel(1,0);}
-    else if(e.key==="z"||e.key==="Z"||e.key==="Enter"||e.key===" ")pressA(); else if(e.key==="x"||e.key==="X")pressB(); });
+    const k=e.key;
+    if(mode==="battle"){ if(k==="ArrowUp")moveSel(0,-1); else if(k==="ArrowDown")moveSel(0,1);
+      else if(k==="ArrowLeft")moveSel(-1,0); else if(k==="ArrowRight")moveSel(1,0);
+      else if(k==="z"||k==="Z"||k==="Enter"||k===" ")pressA(); return; }
+    if(k==="ArrowUp")held.up=true; else if(k==="ArrowDown")held.down=true;
+    else if(k==="ArrowLeft")held.left=true; else if(k==="ArrowRight")held.right=true;
+    else if(k==="z"||k==="Z"||k==="Enter"||k===" ")pressA(); else if(k==="x"||k==="X")pressB(); });
+  addEventListener("keyup",e=>{ const k=e.key;
+    if(k==="ArrowUp")held.up=false; else if(k==="ArrowDown")held.down=false;
+    else if(k==="ArrowLeft")held.left=false; else if(k==="ArrowRight")held.right=false; });
   cv.addEventListener("pointerdown",e=>{ if(mode!=="battle"||!battle.awaiting)return;
     const r=cv.getBoundingClientRect(),mx=(e.clientX-r.left)/r.width*BASE_W,my=(e.clientY-r.top)/r.height*BASE_H;
     if(my<BASE_H-86)return; const col=mx<BASE_W/2?0:1,row=my<BASE_H-44?0:1; battle.sel=row*2+col;sfx.sel();chooseCommand(battle.sel); });
@@ -515,42 +532,71 @@
 
   // ── 업데이트 ──
   function update(dt){ tAll+=dt;
-    if(mode==="field"&&player.moving){ player.t+=dt*6.5;
-      if(player.t>=1){player.t=1;player.moving=false;player.x+=player.fx;player.y+=player.fy;player.px=player.x*TILE;player.py=player.y*TILE;}
-      else{player.px=(player.x+player.fx*player.t)*TILE;player.py=(player.y+player.fy*player.t)*TILE;} }
-    cam.x=Math.max(0,Math.min(MW*TILE-BASE_W,player.px+TILE/2-BASE_W/2));
-    cam.y=Math.max(0,Math.min(MH*TILE-BASE_H,player.py+TILE/2-BASE_H/2));
+    if(mode==="field"){
+      let vx=(held.left?-1:0)+(held.right?1:0), vy=(held.up?-1:0)+(held.down?1:0);
+      if(vx||vy){ const n=Math.hypot(vx,vy)||1; player.x+=vx/n*player.spd*dt; player.y+=vy/n*player.spd*dt; player.moving=true; }
+      else player.moving=false;
+      player.x=Math.max(MAPW*0.03,Math.min(MAPW*0.98,player.x));
+      player.y=Math.max(MAPH*0.05,Math.min(MAPH*0.97,player.y));
+      const bridge = player.y>MAPH*0.40 && player.y<MAPH*0.52;
+      const minX = bridge?MAPW*0.03:MAPW*0.14; if(player.x<minX) player.x=minX; // 강물(다리 제외) 막기
+      // 가까운 장소
+      nearLM=null; let best=46*46;
+      for(const l of LANDMARKS){ const dx=l.x-player.x, dy=l.y-player.y, d=dx*dx+dy*dy;
+        if(d<best){ best=d; nearLM=l; } }
+    }
+    cam.x=Math.max(0,Math.min(MAPW-BASE_W,player.x-BASE_W/2));
+    cam.y=Math.max(0,Math.min(MAPH-BASE_H,player.y-BASE_H/2));
     if(battle.flash>0)battle.flash-=dt*2; if(battle.shake>0)battle.shake-=dt*3;
     if(mode==="dialog"&&dlg.active)dlg.shown=Math.min(dlg.lines[dlg.i].length,dlg.shown+dt*38);
     if(mode==="opening")openShown=Math.min(OPENING[openIdx].text.length,openShown+dt*34);
     if(mode==="battle"&&battle.queue.length)battle.shown=Math.min(battle.queue[0].length,battle.shown+dt*40); }
 
   // ── 렌더 ──
+  function drawFallbackTown(){
+    ctx.fillStyle="#8fd07a"; ctx.fillRect(0,0,MAPW,MAPH);
+    ctx.fillStyle="#7fbfe8"; ctx.fillRect(0,0,MAPW*0.11,MAPH); // 강
+    ctx.fillStyle="#a7c957"; ctx.beginPath(); ctx.ellipse(MAPW*0.5,MAPH*0.5,MAPW*0.30,MAPH*0.32,0,0,7); ctx.fill();
+    ctx.fillStyle="#c9a0c0"; ctx.beginPath(); ctx.ellipse(MAPW*0.5,MAPH*0.5,MAPW*0.16,MAPH*0.18,0,0,7); ctx.fill(); // 광장
+    const cols=["#ffb3c6","#ffd6a5","#bde0fe","#caffbf","#e0c3fc","#fdffb6"];
+    LANDMARKS.forEach((l,i)=>{ if(l.act==="castle")return; ctx.fillStyle=cols[i%cols.length];
+      rr(l.x-17,l.y-13,34,24,4); ctx.fill(); ctx.strokeStyle="rgba(0,0,0,.12)"; ctx.lineWidth=1; ctx.stroke(); });
+    ctx.fillStyle="#a86a3a"; ctx.fillRect(MAPW*0.05,MAPH*0.42,MAPW*0.09,MAPH*0.06); // 다리
+  }
+  function drawPin(l){ const x=l.x,y=l.y;
+    if(l.act==="castle"){ const open=allCaught();
+      ctx.fillStyle=open?"rgba(199,155,255,.95)":"rgba(90,74,106,.92)"; rr(x-17,y-13,34,22,6); ctx.fill();
+      crownF(x,y-13,7,"#ffd36b");
+      ctx.fillStyle="#fff"; ctx.font="8px Jua, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(open?"거울의성":"잠김",x,y-1); return; }
+    ctx.fillStyle="rgba(255,92,154,.95)"; ctx.beginPath(); ctx.moveTo(x-4,y+6);ctx.lineTo(x+4,y+6);ctx.lineTo(x,y+12);ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(x,y-1,9,0,7); ctx.fill();
+    ctx.strokeStyle="#fff"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(x,y-1,9,0,7); ctx.stroke();
+    ctx.fillStyle="#fff"; ctx.font="10px Jua, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(l.no,x,y-0.5);
+  }
+  function drawPlayerOW(x,y,bob){
+    ctx.fillStyle="rgba(0,0,0,.22)"; ctx.beginPath(); ctx.ellipse(x,y+3,13,4,0,0,7); ctx.fill();
+    const im=IMG.romi;
+    if(im&&im._ok){ const s=48; ctx.drawImage(im,x-s/2,y-s+10+bob,s,s); }
+    else drawChar("romi",x,y+10+bob,44);
+  }
+  function drawFloatLabel(text,x,y,on){
+    ctx.font='11px Jua, sans-serif'; ctx.textAlign="center"; ctx.textBaseline="middle";
+    const w=ctx.measureText(text).width+18;
+    ctx.fillStyle=on?"rgba(20,10,32,.9)":"rgba(70,58,80,.9)"; rr(x-w/2,y-11,w,22,8); ctx.fill();
+    ctx.strokeStyle=on?"#ff9ecf":"#a08bb0"; ctx.lineWidth=1.5; rr(x-w/2,y-11,w,22,8); ctx.stroke();
+    ctx.fillStyle="#fff"; ctx.fillText(text,x,y);
+  }
   function drawField(){ ctx.save(); ctx.translate(-Math.round(cam.x),-Math.round(cam.y));
-    const x0=Math.floor(cam.x/TILE),y0=Math.floor(cam.y/TILE);
-    for(let y=y0;y<=y0+VH+1&&y<MH;y++)for(let x=x0;x<=x0+VW+1&&x<MW;x++){ if(x<0||y<0)continue;
-      const c=grid[y][x],px=x*TILE,py=y*TILE;
-      ctx.fillStyle=c==="="?"#e3c78a":"#66b06e"; ctx.fillRect(px,py,TILE,TILE);
-      if(c==="."||c==="g"){ctx.fillStyle="#5ea567";ctx.fillRect(px+4,py+20,3,3);ctx.fillRect(px+22,py+8,3,3);}
-      if(c==="="){ctx.fillStyle="#d8b979";ctx.fillRect(px,py,TILE,2);}
-      if(c==="g"){ctx.fillStyle="#357a45";for(let i=0;i<3;i++)ctx.fillRect(px+4+i*9,py+18,4,10);}
-      if(c==="#"){ctx.fillStyle="#66b06e";ctx.fillRect(px,py,TILE,TILE);ctx.fillStyle="#7a4a2a";ctx.fillRect(px+13,py+18,6,12);
-        ctx.fillStyle="#2f8a45";ctx.beginPath();ctx.arc(px+16,py+13,12,0,7);ctx.fill();ctx.fillStyle="#3fa055";ctx.beginPath();ctx.arc(px+12,py+10,6,0,7);ctx.fill();}
-      if(c==="H"){ctx.fillStyle="#66b06e";ctx.fillRect(px,py,TILE,TILE);ctx.fillStyle="#f2e4c8";ctx.fillRect(px+3,py+13,26,17);
-        ctx.fillStyle="#e0668a";ctx.beginPath();ctx.moveTo(px+1,py+14);ctx.lineTo(px+16,py+2);ctx.lineTo(px+31,py+14);ctx.closePath();ctx.fill();
-        ctx.fillStyle="#a86a3a";ctx.fillRect(px+13,py+21,7,9);ctx.fillStyle="#8fd0ff";ctx.fillRect(px+5,py+16,5,5);ctx.fillRect(px+22,py+16,5,5);} }
-    const bob=Math.sin(tAll*4)*1.5;
-    for(const key in entities){ const [ex,ey]=key.split(",").map(Number),e=entities[key],cx=ex*TILE+TILE/2,cy=ey*TILE+TILE;
-      if(e.type==="npc") owChar("hachu",cx,cy,bob);
-      else if(e.type==="sign"){ ctx.fillStyle="#a86a3a";ctx.fillRect(cx-2,cy-14,4,12);
-        ctx.fillStyle="#f2e4c8";ctx.fillRect(cx-9,cy-26,18,13);ctx.fillStyle="#8a5a2a";ctx.fillRect(cx-7,cy-23,14,2);ctx.fillRect(cx-7,cy-19,14,2); }
-      else if(e.type==="gate"){ const open=allCaught();
-        ctx.fillStyle=open?"#c79bff":"#5a4a6a"; ctx.fillRect(cx-14,cy-30,28,30);
-        ctx.fillStyle=open?"#a06fe0":"#3a2f4a"; ctx.fillRect(cx-10,cy-24,20,24);
-        ctx.fillStyle="#ffd36b"; crownF(cx,cy-30,7,"#ffd36b");
-        if(open){ctx.fillStyle="#fff";ctx.font="9px Jua";ctx.textAlign="center";ctx.fillText("거울의 성",cx,cy-8);} } }
-    const pbob=player.moving?Math.abs(Math.sin(player.t*Math.PI*2))*2:Math.sin(tAll*3);
-    owChar("romi",player.px+TILE/2,player.py+TILE,pbob);
+    if(townImg._ok) ctx.drawImage(townImg,0,0,MAPW,MAPH); else drawFallbackTown();
+    for(const l of LANDMARKS) drawPin(l);
+    const bob=player.moving?Math.abs(Math.sin(tAll*11))*2.5:Math.sin(tAll*3);
+    drawPlayerOW(player.x,player.y,bob);
+    if(nearLM){ const isCastle=nearLM.act==="castle", on=!isCastle||allCaught();
+      const label = isCastle ? (allCaught()?"거울의 성 입구 (A)":"거울의 성 · 잠김") : (nearLM.no+". "+nearLM.name+" (A)");
+      const ly=Math.max(cam.y+14, player.y-42);
+      drawFloatLabel(label, Math.max(cam.x+70,Math.min(cam.x+BASE_W-70,player.x)), ly, on); }
     ctx.restore(); }
 
   function rr(x,y,w,h,r){ ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
