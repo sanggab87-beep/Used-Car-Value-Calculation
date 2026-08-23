@@ -170,7 +170,7 @@
   function nextTarget(){ return catchTargets().find(p=>!caught[p.id]); }
 
   // ── 스프라이트 교체 ──
-  const IDS=[...PINGS.map(p=>p.id),"diana","eclipse","mirror","darkbit","royal"];
+  const IDS=[...PINGS.map(p=>p.id),"romi","diana","eclipse","mirror","darkbit","royal"];
   const IMG={};
   IDS.forEach(k=>{ const im=new Image(); im._ok=false; im.onload=()=>im._ok=true; im.onerror=()=>im._ok=false;
     im.src="assets/"+k+".png"; IMG[k]=im; });
