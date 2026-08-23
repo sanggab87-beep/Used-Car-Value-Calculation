@@ -534,7 +534,8 @@
   function update(dt){ tAll+=dt;
     if(mode==="field"){
       let vx=(held.left?-1:0)+(held.right?1:0), vy=(held.up?-1:0)+(held.down?1:0);
-      if(vx||vy){ const n=Math.hypot(vx,vy)||1; player.x+=vx/n*player.spd*dt; player.y+=vy/n*player.spd*dt; player.moving=true; }
+      if(vx||vy){ const n=Math.hypot(vx,vy)||1; player.x+=vx/n*player.spd*dt; player.y+=vy/n*player.spd*dt;
+        player.moving=true; player.walk=(player.walk||0)+dt*11; if(vx) player.faceX=vx>0?1:-1; }
       else player.moving=false;
       player.x=Math.max(MAPW*0.03,Math.min(MAPW*0.98,player.x));
       player.y=Math.max(MAPH*0.05,Math.min(MAPH*0.97,player.y));
@@ -575,11 +576,24 @@
     ctx.fillStyle="#fff"; ctx.font="10px Jua, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
     ctx.fillText(l.no,x,y-0.5);
   }
-  function drawPlayerOW(x,y,bob){
-    ctx.fillStyle="rgba(0,0,0,.22)"; ctx.beginPath(); ctx.ellipse(x,y+3,13,4,0,0,7); ctx.fill();
-    const im=IMG.romi;
-    if(im&&im._ok){ const s=48; ctx.drawImage(im,x-s/2,y-s+10+bob,s,s); }
-    else drawChar("romi",x,y+10+bob,44);
+  function drawPlayerOW(x,y){
+    const moving=player.moving, ph=player.walk||0;
+    const sq = moving ? Math.abs(Math.sin(ph)) : 0;      // 발 딛기 정도 0..1
+    const bounce = moving ? sq*3.2 : (Math.sin(tAll*3)+1)*0.4; // 상하 통통
+    const sway = moving ? Math.sin(ph*0.5)*0.10 : 0;     // 좌우 살랑(반걸음 주기)
+    const sx = 1 + sq*0.06, sy = 1 - sq*0.09;            // 스쿼시
+    const feetY = y+9;                                    // 발 위치
+    // 그림자 (밟을 때 커짐)
+    ctx.fillStyle="rgba(0,0,0,.22)"; ctx.beginPath();
+    ctx.ellipse(x, feetY, 13*(1+sq*0.18), 4*(1-sq*0.12), 0, 0, 7); ctx.fill();
+    ctx.save();
+    ctx.translate(x, feetY - bounce);
+    ctx.rotate(sway);
+    ctx.scale(sx, sy);
+    const s=48, im=IMG.romi;
+    if(im&&im._ok) ctx.drawImage(im, -s/2, -s, s, s);    // 발끝을 원점에 맞춤
+    else drawChar("romi", 0, 0, 44);
+    ctx.restore();
   }
   function drawFloatLabel(text,x,y,on){
     ctx.font='11px Jua, sans-serif'; ctx.textAlign="center"; ctx.textBaseline="middle";
@@ -605,8 +619,7 @@
       ctx.beginPath(); ctx.arc(nearLM.x,nearLM.y,17+pr,0,7); ctx.stroke();
       ctx.strokeStyle="rgba(255,255,255,.7)"; ctx.lineWidth=1.5;
       ctx.beginPath(); ctx.arc(nearLM.x,nearLM.y,17+pr,0,7); ctx.stroke(); }
-    const bob=player.moving?Math.abs(Math.sin(tAll*11))*2.5:Math.sin(tAll*3);
-    drawPlayerOW(player.x,player.y,bob);
+    drawPlayerOW(player.x,player.y);
     if(nearLM){ const isCastle=nearLM.act==="castle", on=!isCastle||allCaught();
       const label = isCastle ? (allCaught()?"거울의 성 입구 (A)":"거울의 성 · 잠김") : (nearLM.name+" (A)");
       const ly=Math.max(cam.y+16, player.y-44);
