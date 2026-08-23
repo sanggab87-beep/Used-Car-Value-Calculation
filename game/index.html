@@ -229,6 +229,11 @@
   };
   PINGS.forEach(p=>{ if(EPS[p.id]) p.ep=EPS[p.id]; });
 
+  // 변신 프린세스 폼 이름 (placeholder — 실제 폼 이름으로 교체 가능)
+  const FORM_NAMES={ /* 예: sapun:"프린세스 그레이스" 처럼 실제 이름으로 채우면 됨 */ };
+  PINGS.forEach(p=>{ if(p.partner)return;
+    p.form={ name: FORM_NAMES[p.id] || ("프린세스 "+p.name.replace(/핑$/,"")), img:"form_"+p.id }; });
+
   // 최종장 (자매 & 거울)
   const DIANA={id:"diana",name:"다이아나핑",kw:"빛의 언니"};
   const ECLIPSE={id:"eclipse",name:"이클립스핑",kw:"어둠의 동생",hp:40};
@@ -258,6 +263,13 @@
   ["down","up","left","right"].forEach(d=>{ for(let n=1;n<=3;n++){ const key="romi_"+d+"_"+n;
     const im=new Image(); im._ok=false; im.onload=()=>im._ok=true; im.onerror=()=>{};
     im.src=(window.__PING_IMG&&window.__PING_IMG[key])||("assets/"+key+".png"); WALK[d].push(im); } });
+
+  // 로미 변신(프린세스) 폼 이미지. assets/form_<id>.png (없으면 폴백 연출).
+  const FORMIMG={};
+  function loadForm(key){ const im=new Image(); im._ok=false; im.onload=()=>im._ok=true; im.onerror=()=>{};
+    im.src=(window.__PING_IMG&&window.__PING_IMG[key])||("assets/"+key+".png"); FORMIMG[key]=im; }
+  PINGS.forEach(p=>{ if(!p.partner) loadForm("form_"+p.id); });
+  loadForm("form_diana");
 
   // ── fallback 아트 ──
   function eyeF(x,y,rx,ry,mid,lo){ ctx.fillStyle="#fff";ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,7);ctx.fill();
@@ -525,7 +537,9 @@
     bossStage++;
     if(bossStage===1){ // 이클립스핑 격파 후
       say("이클립스핑",["…어째서? 거울이 나에게 힘을 줬는데…","크윽… 거울이… 나를 조종하고 있었어!",
-        "다이아나핑 언니…! 로미, 진짜 적은 이 거울, 미루아르야!","언니와 내가 함께 맞설게. 도와줘, 로미!"],()=>{ startBattle(MIRROR,"boss"); });
+        "다이아나핑 언니…! 로미, 진짜 적은 이 거울, 미루아르야!","언니와 내가 함께 맞설게. 도와줘, 로미!"],
+        ()=> startTransform({ title:"✧ 자매의 합체 변신! ✧", name:"프린세스 다이아나", img:FORMIMG.form_diana, pingId:"diana",
+          then:()=> startBattle(MIRROR,"boss") }));
     } else { // 미루아르 격파 → 엔딩
       mode="ending"; sfx.win();
     }
@@ -550,6 +564,7 @@
       openIdx++; if(openIdx>=OPENING.length){ mode="field"; } else { openShown=0; sfx.talk(); } return; }
     if(mode==="dialog"){ dlgAdvance(); return; }
     if(mode==="choice"){ choiceConfirm(); return; }
+    if(mode==="xform"){ xformFinish(); return; }
     if(mode==="field"){ interact(); return; }
     if(mode==="ending"){ return; }
     if(mode==="battle"){
@@ -628,12 +643,23 @@
   function choiceConfirm(){ if(mode!=="choice")return; const o=choice.opts[choice.sel]; choice.active=false; mode="field";
     const cb=choice.then; choice.then=null; sfx.sel(); if(cb)cb(o); }
 
-  // ── 에피소드 (발단 → 선택 → 전투 → 마무리) ──
+  // ── 변신 연출 ──
+  const XF={active:false,t:0,dur:2.6,title:"",name:"",img:null,pingId:null,then:null};
+  function pingColors(id){ const p=PINGS.find(x=>x.id===id); if(p)return p.body;
+    if(id==="diana")return["#fff2c8","#ffcf6b"]; if(id==="eclipse")return["#c79bff","#7b4fc9"]; return ["#ff9ec9","#ff5c9a"]; }
+  function startTransform(o){ XF.active=true;XF.t=0;XF.title=o.title||"✧ 프린세스 변신! ✧";
+    XF.name=o.name||"";XF.img=o.img||null;XF.pingId=o.pingId||null;XF.then=o.then||null; mode="xform"; sfx.magic();
+    setTimeout(()=>sfx.win&&sfx.win(),300); }
+  function xformFinish(){ const t=XF.then; XF.then=null; XF.active=false; if(t)t(); }
+
+  // ── 에피소드 (발단 → 선택 → 변신 → 전투 → 마무리) ──
   function startEpisode(p){ closeDex(); runEpisode(p); }
   function runEpisode(p){ const ep=p.ep;
     if(!ep){ say("에피소드",p.line||["티니핑이 나타났다!"],()=>startBattle(p,"catch")); return; }
     say("에피소드", ep.setup, ()=>{
-      const toBattle=()=> say(p.name, ep.pre, ()=> startBattle(p,"catch"));
+      const toBattle=()=> say(p.name, ep.pre, ()=> startTransform({
+        title:"✧ 프린세스 변신! ✧", name:(p.form&&p.form.name)||"", img:FORMIMG["form_"+p.id], pingId:p.id,
+        then:()=> startBattle(p,"catch") }));
       if(ep.choice) askChoice(ep.choice.q, ep.choice.opts, (o)=> say("로미",[o.r], toBattle));
       else toBattle();
     });
@@ -658,6 +684,7 @@
     }
     cam.x=Math.max(0,Math.min(MAPW-BASE_W,player.x-BASE_W/2));
     cam.y=Math.max(0,Math.min(MAPH-BASE_H,player.y-BASE_H/2));
+    if(mode==="xform"){ XF.t+=dt; if(XF.t>=XF.dur) xformFinish(); }
     if(battle.flash>0)battle.flash-=dt*2; if(battle.shake>0)battle.shake-=dt*3;
     if(mode==="dialog"&&dlg.active)dlg.shown=Math.min(dlg.lines[dlg.i].length,dlg.shown+dt*38);
     if(mode==="opening")openShown=Math.min(OPENING[openIdx].text.length,openShown+dt*34);
@@ -834,6 +861,7 @@
   function render(){ ctx.clearRect(0,0,BASE_W,BASE_H);
     if(mode==="title"){drawTitle();return;} if(mode==="opening"){drawOpening();return;}
     if(mode==="battle"){drawBattle();return;} if(mode==="ending"){drawEnding();return;}
+    if(mode==="xform"){ drawXform(); return; }
     if(mode==="choice"){ drawField(); drawChoiceBox(); return; }
     drawField();
     if(mode==="dialog"&&dlg.active)drawDialogBox(dlg.name,dlg.lines[dlg.i].slice(0,Math.floor(dlg.shown))); }
@@ -850,10 +878,59 @@
       ctx.fillStyle=sel?"#fff":"#e8d8f0"; ctx.textAlign="left";
       ctx.fillText((sel?"▶ ":"   ")+choice.opts[i].t, bx+24, oy+13); }
   }
+  function drawXform(){
+    const p=Math.min(1,XF.t/XF.dur), col=pingColors(XF.pingId);
+    // 배경 소용돌이
+    const g=ctx.createRadialGradient(BASE_W/2,BASE_H*0.44,8,BASE_W/2,BASE_H*0.44,BASE_H*0.75);
+    g.addColorStop(0,"#fff0fb"); g.addColorStop(0.45,col[0]); g.addColorStop(1,"#2a1240");
+    ctx.fillStyle=g; ctx.fillRect(0,0,BASE_W,BASE_H);
+    // 회전 광선
+    ctx.save(); ctx.translate(BASE_W/2,BASE_H*0.44); ctx.rotate(tAll*2.2);
+    for(let i=0;i<12;i++){ ctx.rotate(Math.PI/6);
+      ctx.fillStyle="rgba(255,255,255,"+(0.10+0.10*Math.sin(tAll*5+i))+")";
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-16,-BASE_H); ctx.lineTo(16,-BASE_H); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+    // 캐릭터 (변신 이미지 or 로미+오라 폴백)
+    const cx=BASE_W/2, cy=BASE_H*0.44, sc=0.55+0.5*Math.min(1,p*1.6), spin=(1-Math.min(1,p*1.4))*Math.PI*2;
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(spin*0.15); ctx.scale(sc,sc);
+    // 오라
+    const gl=ctx.createRadialGradient(0,-4,6,0,0,90); gl.addColorStop(0,col[0]); gl.addColorStop(1,col[1]+"00");
+    ctx.globalAlpha=0.7; ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(0,-4,90,0,7); ctx.fill(); ctx.globalAlpha=1;
+    const im=XF.img;
+    if(im&&im._ok){ const s=150; ctx.drawImage(im,-s/2,-s*0.86,s,s); }
+    else { // 폴백: 로미 + 드레스 오라 + 왕관
+      drawChar("romi", 0, 66, 140);
+      crownF(0, -44, 16, "#ffd36b");
+    }
+    ctx.restore();
+    // 반짝이
+    for(let i=0;i<14;i++){ const a=i/14*6.28+tAll*1.5, r=60+Math.sin(tAll*3+i)*40+p*40;
+      const sxp=cx+Math.cos(a)*r, syp=cy+Math.sin(a)*r*0.8;
+      ctx.fillStyle="#fff"; ctx.globalAlpha=0.5+0.5*Math.sin(tAll*6+i);
+      starF(sxp,syp,3.5,"#fff"); }
+    ctx.globalAlpha=1;
+    // 배너
+    const by=BASE_H*0.72, sIn=Math.min(1,p*2.2);
+    ctx.save(); ctx.globalAlpha=sIn;
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillStyle="#fff"; ctx.font='22px Jua, sans-serif';
+    ctx.fillText(XF.title, BASE_W/2, by);
+    if(XF.name){ ctx.fillStyle="#5a2a7a";
+      const w=ctx.measureText(XF.name).width+34;
+      ctx.font='20px Jua, sans-serif';
+      const w2=ctx.measureText(XF.name).width+34;
+      ctx.fillStyle="rgba(255,255,255,.92)"; rr(BASE_W/2-w2/2, by+16, w2, 34, 17); ctx.fill();
+      ctx.fillStyle="#c94f8e"; ctx.fillText(XF.name, BASE_W/2, by+33); }
+    ctx.globalAlpha=1; ctx.restore();
+    // 플래시(초반)
+    if(p<0.25){ ctx.fillStyle="rgba(255,255,255,"+(1-p/0.25)*0.8+")"; ctx.fillRect(0,0,BASE_W,BASE_H); }
+    ctx.fillStyle="rgba(255,255,255,.6)"; ctx.font='11px "Noto Sans KR"'; ctx.textAlign="center";
+    ctx.fillText("A로 건너뛰기", BASE_W/2, BASE_H-14);
+  }
   function loop(ts){ const dt=Math.min(0.05,(ts-last)/1000||0);last=ts;
     if(mode!=="dex")update(dt); render(); requestAnimationFrame(loop); }
   setInterval(()=>{ hintEl.textContent = mode==="battle"?"⚔ 캐치 전투":mode==="dex"?"💛 도감":
-    mode==="choice"?"📖 선택":mode==="title"?"티니핑 어드벤처":mode==="opening"?"📖 오프닝":
+    mode==="choice"?"📖 선택":mode==="xform"?"✨ 프린세스 변신":mode==="title"?"티니핑 어드벤처":mode==="opening"?"📖 오프닝":
     mode==="ending"?"🌈 엔딩":"🗺 하모니 마을 · [도감]으로 캐치"; },300);
   requestAnimationFrame(loop);
 })();
