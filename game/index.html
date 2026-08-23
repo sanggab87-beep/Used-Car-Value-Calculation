@@ -588,14 +588,28 @@
     ctx.strokeStyle=on?"#ff9ecf":"#a08bb0"; ctx.lineWidth=1.5; rr(x-w/2,y-11,w,22,8); ctx.stroke();
     ctx.fillStyle="#fff"; ctx.fillText(text,x,y);
   }
+  function drawCastleMarker(l){ const open=allCaught(), y=l.y+Math.sin(tAll*3)*2;
+    if(!townImg._ok) return drawPin(l); // 임시맵에선 기존 핀
+    ctx.fillStyle=open?"rgba(199,155,255,.96)":"rgba(80,66,96,.92)"; rr(l.x-22,y-16,44,25,7); ctx.fill();
+    ctx.strokeStyle=open?"#fff":"rgba(255,255,255,.4)"; ctx.lineWidth=1.5; rr(l.x-22,y-16,44,25,7); ctx.stroke();
+    crownF(l.x,y-16,8,"#ffd36b");
+    ctx.fillStyle="#fff"; ctx.font="9px Jua, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(open?"거울의 성 ▲":"🔒 거울의 성", l.x, y-2); }
   function drawField(){ ctx.save(); ctx.translate(-Math.round(cam.x),-Math.round(cam.y));
     if(townImg._ok) ctx.drawImage(townImg,0,0,MAPW,MAPH); else drawFallbackTown();
-    for(const l of LANDMARKS) drawPin(l);
+    // 거울의 성 (지도에 없으므로 항상 표시)
+    const cg=LANDMARKS.find(l=>l.act==="castle"); if(cg) drawCastleMarker(cg);
+    // 가까운 장소만 반짝 강조 (성 제외 — 지도에 이름표가 이미 있음)
+    if(nearLM && nearLM.act!=="castle"){ const pr=Math.sin(tAll*6)*2.5;
+      ctx.strokeStyle="rgba(255,61,138,.9)"; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(nearLM.x,nearLM.y,17+pr,0,7); ctx.stroke();
+      ctx.strokeStyle="rgba(255,255,255,.7)"; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(nearLM.x,nearLM.y,17+pr,0,7); ctx.stroke(); }
     const bob=player.moving?Math.abs(Math.sin(tAll*11))*2.5:Math.sin(tAll*3);
     drawPlayerOW(player.x,player.y,bob);
     if(nearLM){ const isCastle=nearLM.act==="castle", on=!isCastle||allCaught();
-      const label = isCastle ? (allCaught()?"거울의 성 입구 (A)":"거울의 성 · 잠김") : (nearLM.no+". "+nearLM.name+" (A)");
-      const ly=Math.max(cam.y+14, player.y-42);
+      const label = isCastle ? (allCaught()?"거울의 성 입구 (A)":"거울의 성 · 잠김") : (nearLM.name+" (A)");
+      const ly=Math.max(cam.y+16, player.y-44);
       drawFloatLabel(label, Math.max(cam.x+70,Math.min(cam.x+BASE_W-70,player.x)), ly, on); }
     ctx.restore(); }
 
