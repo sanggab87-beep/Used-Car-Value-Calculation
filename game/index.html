@@ -147,6 +147,11 @@
     {id:"gentle",name:"젠틀핑",kw:"신사다움",acc:"crown",body:["#bfe6c8","#5fae7a"],hp:30,legend:true,
       line:["완벽한 신사, 레전드핑 젠틀핑!","마지막 레전드핑! 최선을 다하자!"]},
   ];
+  // 캐릭터별 시각 특징 (오리지널 표현)
+  const FEATS={ ppoduk:"sparkle", charming:"wink", nabi:"butterfly", snow:"snow", iseul:"flower",
+    coolcool:"sleep", longlong:"long", cue:"wink", yaong:"cat", trot:"shades", kkaegul:"frog", gentle:"monocle" };
+  PINGS.forEach(p=>{ p.feat=FEATS[p.id]||"none"; });
+
   // 최종장 (자매 & 거울)
   const DIANA={id:"diana",name:"다이아나핑",kw:"빛의 언니"};
   const ECLIPSE={id:"eclipse",name:"이클립스핑",kw:"어둠의 동생",hp:40};
@@ -199,24 +204,72 @@
     blushF(-26,18,7); blushF(26,18,7);
     ctx.strokeStyle="#c94f7a";ctx.lineWidth=2.4;ctx.lineCap="round";ctx.beginPath();ctx.arc(0,22,6,0.15*Math.PI,0.85*Math.PI);ctx.stroke(); }
 
-  function fPing(s,ping){ const k=s/150; ctx.scale(k,k);
-    const hi=ping.body[0], lo=ping.body[1];
-    const gl=ctx.createRadialGradient(0,0,10,0,0,50);gl.addColorStop(0,lo+"88");gl.addColorStop(1,lo+"00");
-    ctx.fillStyle=gl;ctx.beginPath();ctx.arc(0,0,50,0,7);ctx.fill();
-    // 긴 머리 느낌
-    ctx.fillStyle=lo;ctx.beginPath();ctx.ellipse(34,20,12,26,-0.3,0,7);ctx.fill();
-    const bg=ctx.createRadialGradient(-10,-14,6,0,0,42);bg.addColorStop(0,hi);bg.addColorStop(1,lo);
-    ctx.fillStyle=bg;ctx.beginPath();ctx.arc(0,4,38,0,7);ctx.fill();
-    // 귀/머리 장식
-    ctx.fillStyle=lo;ctx.beginPath();ctx.ellipse(-30,-22,10,16,0.5,0,7);ctx.fill();ctx.beginPath();ctx.ellipse(30,-22,10,16,-0.5,0,7);ctx.fill();
-    ctx.fillStyle=hi;ctx.beginPath();ctx.arc(0,4,38,0,7);ctx.fill();
-    eyeF(-13,0,9,12,lo,"#3a2340"); eyeF(13,0,9,12,lo,"#3a2340");
-    blushF(-24,12,6.5); blushF(24,12,6.5);
-    ctx.strokeStyle="#8a3a5a";ctx.lineWidth=2.2;ctx.lineCap="round";ctx.beginPath();ctx.arc(0,16,5,0.15*Math.PI,0.85*Math.PI);ctx.stroke();
-    if(ping.acc==="heart") heartF(0,-38,18,lo);
-    else if(ping.acc==="crown") crownF(0,-40,14,"#ffd36b");
-    else if(ping.acc==="star") starF(0,-40,12,"#ffd36b");
-    else { ctx.fillStyle="#ffd36b"; ctx.beginPath();ctx.arc(0,-38,5,0,7);ctx.fill(); } }
+  // 통합 티니핑 아트 (어떤 컨텍스트 g에도 그림 · 캐릭터별 feat 반영)
+  function pingArt(g, ping, s){
+    const k=s/150; g.save(); g.scale(k,k);
+    const hi=ping.body[0], lo=ping.body[1], feat=ping.feat||"none";
+    const arc=(x,y,r)=>{g.beginPath();g.arc(x,y,r,0,7);g.fill();};
+    const ell=(x,y,rx,ry,rot)=>{g.beginPath();g.ellipse(x,y,rx,ry,rot||0,0,7);g.fill();};
+    // 글로우
+    let gl=g.createRadialGradient(0,0,10,0,0,50);gl.addColorStop(0,lo+"88");gl.addColorStop(1,lo+"00");
+    g.fillStyle=gl;arc(0,0,50);
+    // 머리카락
+    g.fillStyle=lo;
+    if(feat==="long"){ ell(37,26,13,42,-0.25); ell(-37,26,13,42,0.25); } else { ell(34,20,12,26,-0.3); }
+    // 몸통
+    let bg=g.createRadialGradient(-10,-14,6,0,0,42);bg.addColorStop(0,hi);bg.addColorStop(1,lo);
+    g.fillStyle=bg;arc(0,4,38);
+    // 귀 / 머리 장식
+    if(feat==="cat"){ g.fillStyle=lo;
+      g.beginPath();g.moveTo(-31,-28);g.lineTo(-15,-42);g.lineTo(-11,-20);g.closePath();g.fill();
+      g.beginPath();g.moveTo(31,-28);g.lineTo(15,-42);g.lineTo(11,-20);g.closePath();g.fill();
+      g.fillStyle="#ffb3d0";
+      g.beginPath();g.moveTo(-25,-28);g.lineTo(-17,-36);g.lineTo(-15,-24);g.closePath();g.fill();
+      g.beginPath();g.moveTo(25,-28);g.lineTo(17,-36);g.lineTo(15,-24);g.closePath();g.fill(); }
+    else { g.fillStyle=lo; ell(-30,-22,10,16,0.5); ell(30,-22,10,16,-0.5); }
+    g.fillStyle=hi;arc(0,4,38);
+    // 눈
+    const eye=(x,y,rx,ry,closed)=>{ if(closed){ g.strokeStyle="#4a2c4e";g.lineWidth=2.6;g.lineCap="round";
+        g.beginPath();g.arc(x,y+2,rx,1.12*Math.PI,1.88*Math.PI);g.stroke(); return; }
+      g.fillStyle="#fff";ell(x,y,rx,ry); g.fillStyle=lo;ell(x,y+ry*0.12,rx*0.8,ry*0.85);
+      g.fillStyle="#3a2340";ell(x,y+ry*0.2,rx*0.4,ry*0.5); g.fillStyle="#fff";ell(x-rx*0.35,y-ry*0.3,rx*0.3,ry*0.34); };
+    const sleep=feat==="sleep";
+    eye(-13,0,9,12, sleep);
+    eye(13,0,9,12, sleep || feat==="wink");
+    // 볼
+    g.fillStyle= feat==="snow"?"rgba(120,180,255,.55)":"rgba(255,140,180,.5)"; ell(-24,12,6.5,4.3); ell(24,12,6.5,4.3);
+    // 입
+    g.strokeStyle="#8a3a5a";g.lineWidth=2.2;g.lineCap="round";g.beginPath();
+    if(feat==="frog") g.arc(0,11,11,0.06*Math.PI,0.94*Math.PI); else g.arc(0,16,5,0.15*Math.PI,0.85*Math.PI);
+    g.stroke();
+    // ── 특징 오버레이 ──
+    if(feat==="shades"){ g.fillStyle="#241a2e";
+      g.beginPath();g.moveTo(-23,-4);g.lineTo(23,-4);g.quadraticCurveTo(24,10,12,10);g.quadraticCurveTo(3,10,2,0);
+      g.quadraticCurveTo(1,10,-8,10);g.quadraticCurveTo(-20,10,-23,-4);g.closePath();g.fill();
+      g.fillStyle="rgba(255,255,255,.25)"; ell(-12,0,5,3.5); ell(12,0,5,3.5); }
+    if(feat==="frog"){ g.fillStyle="#eafff0"; arc(-14,-30,9); arc(14,-30,9);
+      g.fillStyle="#2a5a2a"; arc(-14,-28,4); arc(14,-28,4); g.fillStyle="#fff"; arc(-15,-30,1.6); arc(13,-30,1.6); }
+    if(feat==="snow"){ g.strokeStyle="#eafcff";g.lineWidth=2;
+      for(let i=0;i<3;i++){ g.save();g.translate(27,-33);g.rotate(i*Math.PI/3);g.beginPath();g.moveTo(-6,0);g.lineTo(6,0);g.stroke();g.restore(); } }
+    if(feat==="flower"){ g.fillStyle="#ff6f91"; for(let i=0;i<5;i++){const a=i*2*Math.PI/5; arc(-28+Math.cos(a)*7,-24+Math.sin(a)*7,4);} g.fillStyle="#ffe08a"; arc(-28,-24,3.5); }
+    if(feat==="butterfly"){ g.strokeStyle=lo;g.lineWidth=2;g.beginPath();
+      g.moveTo(-6,-38);g.quadraticCurveTo(-13,-52,-18,-49);g.moveTo(6,-38);g.quadraticCurveTo(13,-52,18,-49);g.stroke();
+      g.fillStyle=lo;arc(-18,-49,3);arc(18,-49,3); }
+    if(feat==="sparkle"){ g.fillStyle="#fff";
+      for(const sp of [[-34,-6,3.2],[33,-16,4],[26,22,2.6]]){ const [sx,sy,sr]=sp; g.save();g.translate(sx,sy);
+        g.beginPath();g.moveTo(0,-sr*2);g.lineTo(sr*.5,0);g.lineTo(0,sr*2);g.lineTo(-sr*.5,0);g.closePath();
+        g.moveTo(-sr*2,0);g.lineTo(0,sr*.5);g.lineTo(sr*2,0);g.lineTo(0,-sr*.5);g.closePath();g.fill();g.restore(); } }
+    if(feat==="wink"){ g.fillStyle="#ff9ec9"; arc(24,-2,3); } // 윙크 하트 톡
+    if(feat==="monocle"){ g.strokeStyle="#ffd36b";g.lineWidth=2;g.beginPath();g.arc(13,0,12,0,7);g.stroke();
+      g.beginPath();g.moveTo(13,12);g.lineTo(19,26);g.stroke(); }
+    // 액세서리
+    if(ping.acc==="heart"){ g.save();g.translate(0,-38);g.scale(1.1,1.1);g.beginPath();g.moveTo(0,4);
+      g.bezierCurveTo(-9,-6,-17,5,0,16);g.bezierCurveTo(17,5,9,-6,0,4);g.closePath();g.fillStyle=lo;g.fill();g.restore(); }
+    else if(ping.acc==="crown"){ g.fillStyle="#ffd36b";g.beginPath();g.moveTo(-14,-40);g.lineTo(-7,-52);g.lineTo(0,-43);g.lineTo(7,-52);g.lineTo(14,-40);g.closePath();g.fill();
+      g.fillStyle="#ff6f91";arc(0,-46,2.4); }
+    else if(ping.acc==="star"){ g.fillStyle="#ffd36b";g.beginPath();for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5;g.lineTo(Math.cos(a)*12,-40+Math.sin(a)*12);const a2=a+Math.PI/5;g.lineTo(Math.cos(a2)*5.4,-40+Math.sin(a2)*5.4);}g.closePath();g.fill(); }
+    g.restore();
+  }
 
   function fSister(s,light){ const k=s/150; ctx.scale(k,k);
     const skin=light?"#fff2f8":"#efe4ff",hairHi=light?"#fff6d8":"#c9a3ff",hairLo=light?"#ffe08a":"#7b4fc9",
@@ -262,7 +315,7 @@
     else if(key==="eclipse") fSister(size,false);
     else if(key==="mirror") fMirror(size);
     else if(key==="darkbit") fDark(size);
-    else { const p=pingById(key); if(p) fPing(size,p); else fDark(size); }
+    else { const p=pingById(key); if(p) pingArt(ctx,p,size); else fDark(size); }
     ctx.restore();
   }
   function owChar(key,cx,cy,bob){
@@ -443,10 +496,11 @@
       card.className="pcard"+(got?"":" locked")+(isNext?" next":"");
       const c=document.createElement("canvas"); c.width=120; c.height=120;
       const cx=c.getContext("2d"); cx.scale(2,2);
-      cx.save(); cx.translate(30,52);
-      if(got||isNext){ cx.save(); const _ctx=ctx; drawPingCard(cx,p); cx.restore(); }
-      else { cx.fillStyle="rgba(255,255,255,.15)"; cx.beginPath(); cx.arc(0,-6,22,0,7); cx.fill();
-        cx.fillStyle="rgba(255,255,255,.4)"; cx.font="20px Jua"; cx.textAlign="center"; cx.fillText("?",0,2); }
+      cx.save(); cx.translate(30,30);
+      if(got||isNext){ const im=IMG[p.id];
+        if(im&&im._ok) cx.drawImage(im,-24,-26,48,48); else pingArt(cx,p,50); }
+      else { cx.fillStyle="rgba(255,255,255,.15)"; cx.beginPath(); cx.arc(0,-2,20,0,7); cx.fill();
+        cx.fillStyle="rgba(255,255,255,.45)"; cx.font="18px Jua"; cx.textAlign="center"; cx.textBaseline="middle"; cx.fillText("?",0,-1); }
       cx.restore();
       card.appendChild(c);
       card.insertAdjacentHTML("beforeend",
@@ -456,29 +510,6 @@
         card.addEventListener("click",()=>{ if(p.partner)return; sfx.sel(); startEpisode(p); }); }
       dexGrid.appendChild(card);
     }
-  }
-  // 도감 카드용 그리기 (실제 이미지 있으면 사용)
-  function drawPingCard(cx,p){
-    const im=IMG[p.id];
-    if(im&&im._ok){ cx.drawImage(im,-24,-30,48,48); return; }
-    // fallback: ctx 전역 함수 재사용 위해 임시로 그림
-    cx.save(); cx.scale(0.32,0.32);
-    // fPing를 cx로 다시 구현하기 번거로우니 간단 버전
-    const hi=p.body[0],lo=p.body[1];
-    cx.fillStyle=lo;cx.beginPath();cx.ellipse(34,20,12,26,-0.3,0,7);cx.fill();
-    cx.fillStyle=hi;cx.beginPath();cx.arc(0,4,38,0,7);cx.fill();
-    cx.fillStyle=lo;cx.beginPath();cx.ellipse(-30,-22,10,16,0.5,0,7);cx.fill();cx.beginPath();cx.ellipse(30,-22,10,16,-0.5,0,7);cx.fill();
-    cx.fillStyle=hi;cx.beginPath();cx.arc(0,4,38,0,7);cx.fill();
-    // 눈
-    for(const ex of [-13,13]){ cx.fillStyle="#fff";cx.beginPath();cx.ellipse(ex,0,9,12,0,0,7);cx.fill();
-      cx.fillStyle=lo;cx.beginPath();cx.ellipse(ex,1.4,7,10,0,0,7);cx.fill();
-      cx.fillStyle="#3a2340";cx.beginPath();cx.ellipse(ex,2.4,3.6,6,0,0,7);cx.fill();
-      cx.fillStyle="#fff";cx.beginPath();cx.ellipse(ex-3,-3.6,2.7,4,0,0,7);cx.fill(); }
-    cx.fillStyle="rgba(255,140,180,.5)";cx.beginPath();cx.ellipse(-24,12,6.5,4,0,0,7);cx.fill();cx.beginPath();cx.ellipse(24,12,6.5,4,0,0,7);cx.fill();
-    if(p.acc==="crown"){cx.fillStyle="#ffd36b";cx.beginPath();cx.moveTo(-14,-40);cx.lineTo(-7,-52);cx.lineTo(0,-43);cx.lineTo(7,-52);cx.lineTo(14,-40);cx.closePath();cx.fill();}
-    else if(p.acc==="star"){cx.fillStyle="#ffd36b";cx.beginPath();for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5;cx.lineTo(Math.cos(a)*12,-40+Math.sin(a)*12);const a2=a+Math.PI/5;cx.lineTo(Math.cos(a2)*5.4,-40+Math.sin(a2)*5.4);}cx.closePath();cx.fill();}
-    else {cx.save();cx.translate(0,-40);cx.scale(1.1,1.1);cx.beginPath();cx.moveTo(0,4);cx.bezierCurveTo(-9,-6,-17,5,0,16);cx.bezierCurveTo(17,5,9,-6,0,4);cx.closePath();cx.fillStyle=lo;cx.fill();cx.restore();}
-    cx.restore();
   }
   function startEpisode(p){ closeDex(); say("에피소드",p.line,()=>{ startBattle(p,"catch"); }); }
 
