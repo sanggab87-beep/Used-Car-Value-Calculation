@@ -175,6 +175,13 @@
   IDS.forEach(k=>{ const im=new Image(); im._ok=false; im.onload=()=>im._ok=true; im.onerror=()=>im._ok=false;
     im.src="assets/"+k+".png"; IMG[k]=im; });
 
+  // 로미 걷기 스프라이트 (남=down/북=up/서=left/동=right, 각 1~3프레임).
+  // 파일이 있으면 프레임 재생, 없으면 코드 걷기 연출로 자동 폴백.
+  const WALK={down:[],up:[],left:[],right:[]};
+  ["down","up","left","right"].forEach(d=>{ for(let n=1;n<=3;n++){ const key="romi_"+d+"_"+n;
+    const im=new Image(); im._ok=false; im.onload=()=>im._ok=true; im.onerror=()=>{};
+    im.src=(window.__PING_IMG&&window.__PING_IMG[key])||("assets/"+key+".png"); WALK[d].push(im); } });
+
   // ── fallback 아트 ──
   function eyeF(x,y,rx,ry,mid,lo){ ctx.fillStyle="#fff";ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,7);ctx.fill();
     ctx.fillStyle=mid;ctx.beginPath();ctx.ellipse(x,y+ry*0.12,rx*0.8,ry*0.85,0,0,7);ctx.fill();
@@ -535,7 +542,8 @@
     if(mode==="field"){
       let vx=(held.left?-1:0)+(held.right?1:0), vy=(held.up?-1:0)+(held.down?1:0);
       if(vx||vy){ const n=Math.hypot(vx,vy)||1; player.x+=vx/n*player.spd*dt; player.y+=vy/n*player.spd*dt;
-        player.moving=true; player.walk=(player.walk||0)+dt*11; if(vx) player.faceX=vx>0?1:-1; }
+        player.moving=true; player.walk=(player.walk||0)+dt*11; player.animT=(player.animT||0)+dt;
+        if(Math.abs(vx)>Math.abs(vy)) player.dir4=vx>0?"right":"left"; else player.dir4=vy>0?"down":"up"; }
       else player.moving=false;
       player.x=Math.max(MAPW*0.03,Math.min(MAPW*0.98,player.x));
       player.y=Math.max(MAPH*0.05,Math.min(MAPH*0.97,player.y));
@@ -576,23 +584,35 @@
     ctx.fillStyle="#fff"; ctx.font="10px Jua, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
     ctx.fillText(l.no,x,y-0.5);
   }
+  function walkFrames(dir){ // 방향별 프레임(+반전 폴백)
+    let f=(WALK[dir]||[]).filter(im=>im._ok), mirror=false;
+    if(!f.length){ if(dir==="left"){ f=(WALK.right||[]).filter(im=>im._ok); mirror=true; }
+      else if(dir==="right"){ f=(WALK.left||[]).filter(im=>im._ok); mirror=true; } }
+    return {f,mirror};
+  }
   function drawPlayerOW(x,y){
-    const moving=player.moving, ph=player.walk||0;
-    const sq = moving ? Math.abs(Math.sin(ph)) : 0;      // 발 딛기 정도 0..1
-    const bounce = moving ? sq*3.2 : (Math.sin(tAll*3)+1)*0.4; // 상하 통통
-    const sway = moving ? Math.sin(ph*0.5)*0.10 : 0;     // 좌우 살랑(반걸음 주기)
-    const sx = 1 + sq*0.06, sy = 1 - sq*0.09;            // 스쿼시
-    const feetY = y+9;                                    // 발 위치
-    // 그림자 (밟을 때 커짐)
+    const moving=player.moving, dir=player.dir4||"down", feetY=y+9;
+    const {f:frames,mirror}=walkFrames(dir);
+    if(frames.length){
+      // ── 스프라이트 발걸음 애니메이션 ──
+      const idx = moving ? (Math.floor((player.animT||0)/0.16)%frames.length) : 0;
+      const bob = moving ? Math.abs(Math.sin(player.walk||0))*1.2 : 0;
+      ctx.fillStyle="rgba(0,0,0,.22)"; ctx.beginPath(); ctx.ellipse(x,feetY,13,4,0,0,7); ctx.fill();
+      ctx.save(); ctx.translate(x, feetY-bob); if(mirror) ctx.scale(-1,1);
+      const s=52; ctx.drawImage(frames[idx], -s/2, -s, s, s); ctx.restore();
+      return;
+    }
+    // ── 폴백: 코드 걷기 연출 (단일 이미지) ──
+    const ph=player.walk||0;
+    const sq = moving ? Math.abs(Math.sin(ph)) : 0;
+    const bounce = moving ? sq*3.2 : (Math.sin(tAll*3)+1)*0.4;
+    const sway = moving ? Math.sin(ph*0.5)*0.10 : 0;
+    const sx = 1 + sq*0.06, sy = 1 - sq*0.09;
     ctx.fillStyle="rgba(0,0,0,.22)"; ctx.beginPath();
     ctx.ellipse(x, feetY, 13*(1+sq*0.18), 4*(1-sq*0.12), 0, 0, 7); ctx.fill();
-    ctx.save();
-    ctx.translate(x, feetY - bounce);
-    ctx.rotate(sway);
-    ctx.scale(sx, sy);
+    ctx.save(); ctx.translate(x, feetY - bounce); ctx.rotate(sway); ctx.scale(sx, sy);
     const s=48, im=IMG.romi;
-    if(im&&im._ok) ctx.drawImage(im, -s/2, -s, s, s);    // 발끝을 원점에 맞춤
-    else drawChar("romi", 0, 0, 44);
+    if(im&&im._ok) ctx.drawImage(im, -s/2, -s, s, s); else drawChar("romi", 0, 0, 44);
     ctx.restore();
   }
   function drawFloatLabel(text,x,y,on){
