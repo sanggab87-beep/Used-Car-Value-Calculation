@@ -152,87 +152,108 @@
     coolcool:"sleep", longlong:"long", cue:"wink", yaong:"cat", trot:"shades", kkaegul:"frog", gentle:"monocle" };
   PINGS.forEach(p=>{ p.feat=FEATS[p.id]||"none"; });
 
-  // ── 에피소드 (감정 폭주 → 선택 → 캐치 → 마무리) · 전부 오리지널, 데이터로 교체 가능 ──
+  // ── 에피소드 (시즌6 실제 회차 소재 기반 · 대사는 오리지널 각색) ──
   const EPS={
-    sapun:{ setup:["옷가게 앞, 사람들이 모두 발끝으로 사뿐사뿐 걷고 있어!","'우아하지 않으면 안 돼~' 사뿐핑의 우아함이 퍼졌나 봐."],
-      choice:{q:"로미야, 어떻게 다가갈까?",opts:[{t:"우아하게 인사한다",r:"우아한 인사에 사뿐핑이 방긋 웃었어!"},{t:"하츄핑과 살금살금",r:"하츄핑과 손잡고 살금살금 다가갔어!"}]},
-      pre:["사뿐핑, 우아함이 너무 넘쳐 힘들어 보여. 진정시키자!"],
-      outro:["사뿐핑을 캐치하자 사람들이 편하게 걷기 시작했어.","우아함도 좋지만, 편한 게 제일이야!"] },
-    areum:{ setup:["거울마다 사람들이 붙어 '나 정말 예쁘다~' 하며 못 떠나!","아름핑의 아름다움에 다들 홀려버렸어."],
-      choice:{q:"어떻게 정신을 차리게 할까?",opts:[{t:"진짜 예쁜 건 마음이라 말한다",r:"'마음이 예쁜 게 최고야!' 다들 끄덕끄덕."},{t:"거울을 살짝 가린다",r:"거울을 가리자 사람들이 두리번!"}]},
-      pre:["아름핑, 겉모습만 보면 안 돼. 캐치!"],
-      outro:["아름핑을 캐치하자 다들 서로를 바라보며 웃었어.","진짜 아름다움은 마음에서 나와!"] },
-    ppony:{ setup:["광장에서 사람들이 계속 '멋진' 포즈만 잡고 움직이질 않아!","뽀니핑의 멋내기 열풍이 불었나 봐."],
-      choice:{q:"어떻게 할까?",opts:[{t:"제일 멋진 포즈로 승부한다",r:"로미의 포즈에 뽀니핑이 감탄했어!"},{t:"'멋보다 움직임!' 외친다",r:"다들 정신이 번쩍 들었어!"}]},
-      pre:["뽀니핑, 멋도 좋지만 이제 그만! 진정시키자!"],
-      outro:["뽀니핑을 캐치하자 사람들이 다시 움직였어.","진짜 멋은 자연스러운 모습이야!"] },
-    ppoduk:{ setup:["베이커리 앞이 온통 비눗방울과 거품투성이!","뽀득핑이 마을을 너무 반짝반짝 닦아서 다들 미끄덩!"],
-      choice:{q:"미끄러운 거품, 어떻게 지날까?",opts:[{t:"조심조심 한 발씩",r:"살금살금 무사히 통과!"},{t:"하츄핑이 길을 닦아준다",r:"하츄핑이 뽀송하게 길을 만들었어!"}]},
-      pre:["뽀득핑, 적당히 깨끗한 게 좋은 거야. 캐치!"],
+    ppoduk:{ setup:["마을이 온통 거품과 비눗방울 투성이!","뽀득핑이 뭐든 뽀득뽀득 뽀드득 닦아버려서 다들 미끄덩!"],
+      choice:{q:"미끄러운 길, 어떻게 지나갈까?",opts:[{t:"조심조심 한 발씩",r:"살금살금, 무사히 통과!"},{t:"하츄핑이 길을 말려준다",r:"하츄핑이 뽀송뽀송 길을 만들었어!"}]},
+      pre:["뽀득핑, 적당히 깨끗한 게 좋은 거야!"],
       outro:["뽀득핑을 캐치하자 거품이 사라졌어.","깨끗한 것도 적당히가 딱 좋아!"] },
-    charming:{ setup:["사람들이 서로 윙크하고 칭찬하느라 시끌시끌!","차밍핑의 매력에 모두가 반해버렸어."],
-      choice:{q:"매력 공세, 어떻게 대응할까?",opts:[{t:"환하게 웃어준다",r:"로미의 미소에 차밍핑이 두근!"},{t:"진심으로 칭찬한다",r:"진심 어린 칭찬에 마음이 열렸어!"}]},
-      pre:["차밍핑, 매력이 너무 강해! 진정시키자!"],
-      outro:["차밍핑을 캐치하자 마을이 차분해졌어.","진짜 매력은 꾸밈없는 진심이야!"] },
-    nabi:{ setup:["다들 가슴이 콩닥콩닥 설레서 안절부절!","나비핑이 팔랑팔랑 설렘을 퍼뜨렸나 봐."],
-      choice:{q:"두근대는 마음, 어떻게 가라앉힐까?",opts:[{t:"크게 심호흡한다",r:"후~ 하고 숨을 고르니 차분해졌어!"},{t:"하츄핑과 손을 잡는다",r:"손을 잡으니 마음이 편안!"}]},
-      pre:["나비핑, 설렘이 너무 커! 캐치!"],
-      outro:["나비핑을 캐치하자 마을이 잔잔해졌어.","설렘은 아껴뒀다 특별한 날에!"] },
-    silk:{ setup:["뭐든 너무 보들보들 미끄러워 물건이 손에서 쏙쏙 빠져나가!","실크핑의 부드러움이 온 마을에 퍼졌어."],
-      choice:{q:"미끄러운 물건들, 어떻게 잡을까?",opts:[{t:"두 손으로 꼭 감싼다",r:"꼭 감싸니 안 미끄러져!"},{t:"하츄핑이 도와준다",r:"하츄핑과 함께 하나씩 정리!"}]},
-      pre:["실크핑, 부드러움이 지나쳐! 진정시키자!"],
-      outro:["실크핑을 캐치하자 물건들이 제자리로.","부드러움도 적당할 때 포근해!"] },
-    snow:{ setup:["한여름 광장에 갑자기 눈보라가 몰아쳐 다들 덜덜!","스노우핑의 시원함이 너무 세졌어."],
-      choice:{q:"추위, 어떻게 이겨낼까?",opts:[{t:"다 같이 꼭 붙어 온기 나눈다",r:"옹기종기 붙으니 따뜻해!"},{t:"하츄핑의 사랑으로 데운다",r:"하츄핑의 온기가 퍼졌어!"}]},
-      pre:["스노우핑, 너무 추워! 마음을 녹여 캐치!"],
-      outro:["스노우핑을 캐치하자 다시 여름 햇살이.","시원함은 더운 날에만 살짝!"] },
-    iseul:{ setup:["작은 일에도 다들 눈물이 그렁그렁, 훌쩍훌쩍!","이슬핑의 촉촉함에 온 마을이 울먹여."],
-      choice:{q:"우는 사람들을 어떻게 달랠까?",opts:[{t:"따뜻하게 안아준다",r:"포근한 포옹에 눈물이 쏙!"},{t:"재밌는 이야기를 해준다",r:"까르르 웃음이 터졌어!"}]},
-      pre:["이슬핑, 그만 울어도 괜찮아. 캐치!"],
-      outro:["이슬핑을 캐치하자 눈물이 웃음으로 바뀌었어.","눈물도 마음을 씻어주는 거야!"] },
-    coolcool:{ setup:["마을 사람들이 여기저기서 꾸벅꾸벅 졸고 있어!","쿨쿨핑의 잠이 스르르 퍼졌나 봐."],
-      choice:{q:"졸음, 어떻게 깨울까?",opts:[{t:"신나게 박수를 친다",r:"짝짝짝! 다들 눈이 번쩍!"},{t:"살금살금 다가간다",r:"깨우지 않게 살금살금!"}]},
-      pre:["쿨쿨핑, 지금은 잘 시간이 아니야. 캐치!"],
-      outro:["쿨쿨핑을 캐치하자 다들 기지개를 켰어.","잠은 밤에 폭신하게 자자!"] },
-    shushu:{ setup:["다들 부끄러워 얼굴을 가리고 숨어버렸어!","슈슈핑의 수줍음이 온 마을에 번졌어."],
-      choice:{q:"숨은 사람들, 어떻게 나오게 할까?",opts:[{t:"먼저 밝게 인사한다",r:"'안녕!' 하니 하나둘 얼굴을 빼꼼!"},{t:"작은 목소리로 다가간다",r:"소곤소곤 다가가니 마음을 열었어!"}]},
-      pre:["슈슈핑, 부끄러워 말고 나와! 캐치!"],
-      outro:["슈슈핑을 캐치하자 다들 방긋 인사했어.","수줍음도 용기를 내면 친구가 돼!"] },
-    longlong:{ setup:["다들 너무 느긋~해서 아무 일도 안 하고 늘어져 있어!","롱롱핑의 여유가 지나치게 퍼졌나 봐."],
-      choice:{q:"느긋함, 어떻게 깨울까?",opts:[{t:"신나는 목표를 정해준다",r:"'회담 준비하자!' 다들 벌떡!"},{t:"함께 스트레칭한다",r:"쭉쭉 펴니 기운이 났어!"}]},
-      pre:["롱롱핑, 여유도 좋지만 이제 움직이자! 캐치!"],
-      outro:["롱롱핑을 캐치하자 마을에 활기가 돌았어.","느긋함은 쉴 때만 살짝!"] },
-    cue:{ setup:["다들 애교 부리느라 진지한 얘기를 못 해!","큐핑의 귀여움이 온 마을을 사로잡았어."],
-      choice:{q:"애교 공세, 어떻게 할까?",opts:[{t:"같이 귀여운 척한다",r:"로미의 애교에 큐핑이 까르르!"},{t:"진지하게 부탁한다",r:"진지한 부탁에 큐핑도 끄덕!"}]},
-      pre:["큐핑, 귀여움이 너무 넘쳐! 진정시키자!"],
-      outro:["큐핑을 캐치하자 다들 다시 진지해졌어.","귀여움은 가끔이 더 사랑스러워!"] },
-    yaong:{ setup:["물건들이 자꾸 사라지고 여기저기 장난이 한가득!","야옹핑이 장난기가 발동했나 봐."],
-      choice:{q:"장난꾸러기 야옹핑, 어떻게 잡을까?",opts:[{t:"숨바꼭질로 승부한다",r:"까꿍! 로미가 먼저 찾았어!"},{t:"좋아하는 방울로 유인한다",r:"딸랑딸랑~ 야옹핑이 다가왔어!"}]},
-      pre:["야옹핑, 장난은 그만! 캐치!"],
-      outro:["야옹핑을 캐치하자 사라진 물건들이 돌아왔어.","장난도 서로 즐거울 때만!"] },
-    charle:{ setup:["다들 너무 격식을 차려 뻣뻣하게 인사만 반복해!","레전드핑 샤를핑의 품위가 강하게 퍼졌어."],
-      choice:{q:"기품 넘치는 샤를핑, 어떻게 대할까?",opts:[{t:"정중하게 예를 갖춘다",r:"로미의 예의에 샤를핑이 고개를 끄덕!"},{t:"편하게 웃으며 다가간다",r:"환한 웃음에 샤를핑도 미소!"}]},
-      pre:["샤를핑, 레전드핑이라 만만찮아. 정신 차리고 캐치!"],
-      outro:["샤를핑을 캐치하자 다들 편하게 웃었어.","품위는 마음의 여유에서 나와!"] },
-    trot:{ setup:["광장에 흥겨운 리듬이 울려 다들 멈추지 못하고 춤춰!","레전드핑 트롯핑의 흥이 폭발했어."],
+    charming:{ setup:["다들 자신감을 잃고 시무룩해졌어…","차밍핑이 '매력을 찾아줄게!' 하며 마법을 쓰다가 폭주했나 봐!"],
+      choice:{q:"어떻게 도와줄까?",opts:[{t:"모두의 좋은 점을 말해준다",r:"칭찬에 다들 얼굴이 환해졌어!"},{t:"차밍핑에게 진심을 전한다",r:"'네 매력은 이미 충분해!' 차밍핑이 두근!"}]},
+      pre:["차밍핑, 매력은 억지로 만드는 게 아니야!"],
+      outro:["차밍핑을 캐치하자 다들 자신감을 되찾았어.","진짜 매력은 있는 그대로의 모습이야!"] },
+    nabi:{ setup:["마을 사람들 등에 날개가 돋아 둥둥 떠다니고 있어!","나비핑이 '날개를 달아줄게~' 하며 마법을 뿌렸나 봐."],
+      choice:{q:"둥둥 떠다니는 사람들, 어떻게 구할까?",opts:[{t:"손을 잡아 끌어내린다",r:"한 명씩 살포시 착지 성공!"},{t:"나비핑을 먼저 쫓는다",r:"팔랑팔랑 나비핑을 따라잡았어!"}]},
+      pre:["나비핑, 날개는 마음에 달아주는 거야!"],
+      outro:["나비핑을 캐치하자 모두 사뿐히 내려왔어.","설레는 마음이 진짜 날개야!"] },
+    silk:{ setup:["실크핑의 마법 양탄자가 물건이며 사람이며 태우고 붕붕 날아다녀!","온 마을이 양탄자 소동에 빠졌어."],
+      choice:{q:"날아다니는 양탄자, 어떻게 멈출까?",opts:[{t:"양탄자에 올라탄다",r:"로미가 폴짝! 양탄자 위에 탔어!"},{t:"착지 지점에서 기다린다",r:"포근한 이불을 깔고 기다렸어!"}]},
+      pre:["실크핑, 양탄자 여행은 이제 그만!"],
+      outro:["실크핑을 캐치하자 양탄자가 살포시 내려앉았어.","부드러운 마법은 포근할 때 최고야!"] },
+    charle:{ setup:["프린스티니핑 삼총사가 마을에 나타났다!","기품 넘치는 샤를핑이 우아한 대결을 신청해왔어."],
+      choice:{q:"샤를핑의 대결, 어떻게 받을까?",opts:[{t:"정중하게 예를 갖춘다",r:"로미의 예의에 샤를핑이 감탄!"},{t:"당당하게 맞선다",r:"당찬 모습에 샤를핑이 미소!"}]},
+      pre:["샤를핑, 프린스티니핑의 품격을 보여줘!"],
+      outro:["샤를핑이 로미를 인정했어!","삼총사의 첫째 관문 통과!"] },
+    trot:{ setup:["삼총사의 무대가 멈추지 않아! 트롯핑의 흥이 폭발했어.","온 광장이 들썩들썩 춤판이 됐어!"],
       choice:{q:"멈추지 않는 무대, 어떻게 할까?",opts:[{t:"같이 신나게 춤춘다",r:"로미의 춤에 트롯핑이 엄지 척!"},{t:"박자를 천천히 늦춘다",r:"느린 박자에 다들 숨을 골랐어!"}]},
       pre:["트롯핑, 흥이 너무 세! 리듬을 진정시키자!"],
-      outro:["트롯핑을 캐치하자 마을이 차분해졌어.","흥은 축제 날 마음껏 즐기자!"] },
-    kkaegul:{ setup:["다들 폴짝폴짝 뛰며 개굴개굴, 너무 소란스러워!","레전드핑 깨굴핑의 명랑함이 넘쳐흘렀어."],
-      choice:{q:"폴짝대는 깨굴핑, 어떻게 잡을까?",opts:[{t:"같이 폴짝 뛰며 다가간다",r:"폴짝폴짝! 깨굴핑과 눈높이를 맞췄어!"},{t:"연잎 위에서 기다린다",r:"가만히 기다리니 깨굴핑이 폴짝 왔어!"}]},
-      pre:["깨굴핑, 신나는 것도 좋지만 진정! 캐치!"],
-      outro:["깨굴핑을 캐치하자 마을이 조용해졌어.","명랑함은 모두를 웃게 하는 힘!"] },
-    gentle:{ setup:["다들 '먼저 가세요~'만 반복하며 아무도 못 지나가!","마지막 레전드핑 젠틀핑의 신사다움이 지나쳤어."],
-      choice:{q:"양보만 하는 사람들, 어떻게 할까?",opts:[{t:"차례를 정해준다",r:"'하나씩 지나가요!' 질서가 잡혔어!"},{t:"정중히 먼저 안내한다",r:"로미의 안내에 젠틀핑이 감탄!"}]},
-      pre:["젠틀핑, 마지막 레전드핑! 최선을 다해 캐치!"],
-      outro:["젠틀핑을 캐치하자 마을에 질서가 돌아왔어.","진짜 신사는 배려와 균형을 알아!"] },
+      outro:["트롯핑을 캐치하자 무대가 차분해졌어.","흥은 축제 날 마음껏 즐기자!"] },
+    snow:{ setup:["마을이 차갑게 꽁꽁 얼어붙었어! 다들 덜덜 떨고 있어.","스노우핑의 차가움이 너무 세졌나 봐."],
+      choice:{q:"꽁꽁 언 마을, 어떻게 녹일까?",opts:[{t:"다 같이 붙어 온기를 나눈다",r:"옹기종기 붙으니 따뜻해!"},{t:"하츄핑의 사랑으로 데운다",r:"하츄핑의 온기가 퍼졌어!"}]},
+      pre:["스노우핑, 차가운 마음을 녹여줄게!"],
+      outro:["스노우핑을 캐치하자 얼음이 스르르 녹았어.","시원함은 더운 날에만 살짝!"] },
+    areum:{ setup:["무도회 준비로 바느질을 맡은 아름핑!","그런데 온 마을 옷을 죄다 꿰매버려서 옷들이 서로 붙어버렸어!"],
+      choice:{q:"붙어버린 옷들, 어떻게 할까?",opts:[{t:"실을 살살 풀어준다",r:"한 올씩 조심조심, 풀렸다!"},{t:"아름핑에게 부탁한다",r:"'아름답게 다시 만들어줘!' 아름핑이 반짝!"}]},
+      pre:["아름핑, 바느질 솜씨는 최고지만 진정해!"],
+      outro:["아름핑을 캐치하자 옷들이 예쁘게 완성됐어.","정성이 담긴 바느질이 제일 아름다워!"] },
+    iseul:{ setup:["이슬핑의 이슬 한 방울이 떨어진 곳마다 눈물바다!","작은 일에도 다들 훌쩍훌쩍 울고 있어."],
+      choice:{q:"우는 사람들을 어떻게 달랠까?",opts:[{t:"따뜻하게 안아준다",r:"포근한 포옹에 눈물이 쏙!"},{t:"재밌는 이야기를 해준다",r:"까르르 웃음이 터졌어!"}]},
+      pre:["이슬핑, 그만 울어도 괜찮아!"],
+      outro:["이슬핑을 캐치하자 눈물이 웃음으로 바뀌었어.","눈물도 마음을 씻어주는 거야!"] },
+    coolcool:{ setup:["낮잠 진짜 좋아~ 마을 사람들이 여기저기서 꾸벅꾸벅!","쿨쿨핑의 잠이 스르르 퍼졌나 봐."],
+      choice:{q:"졸음, 어떻게 깨울까?",opts:[{t:"신나게 박수를 친다",r:"짝짝짝! 다들 눈이 번쩍!"},{t:"살금살금 다가간다",r:"깨우지 않게 살금살금!"}]},
+      pre:["쿨쿨핑, 지금은 잘 시간이 아니야!"],
+      outro:["쿨쿨핑을 캐치하자 다들 기지개를 켰어.","잠은 밤에 폭신하게 자자!"] },
+    shushu:{ setup:["어라? 아까랑 똑같은 아침이 또 반복되고 있어!","슈슈핑이 시간을 자꾸 되돌리고 있나 봐!"],
+      choice:{q:"반복되는 시간, 어떻게 벗어날까?",opts:[{t:"반복을 기억하고 앞서간다",r:"다음에 일어날 일을 미리 맞혔어!"},{t:"슈슈핑을 찾아 설득한다",r:"'시간은 흘러야 소중해!' 슈슈핑이 멈칫!"}]},
+      pre:["슈슈핑, 시간을 되돌려도 마음은 못 되돌려!"],
+      outro:["슈슈핑을 캐치하자 시간이 다시 흘렀어.","지금 이 순간이 제일 소중해!"] },
+    longlong:{ setup:["롱롱핑의 긴 머리가 끝없이 자라 온 마을을 뒤덮었어!","길도 지붕도 머리카락으로 꽁꽁!"],
+      choice:{q:"끝없는 머리카락, 어떻게 할까?",opts:[{t:"예쁘게 땋아준다",r:"곱게 땋으니 롱롱핑이 좋아해!"},{t:"머리카락 길을 따라간다",r:"머리카락을 따라 롱롱핑을 찾았어!"}]},
+      pre:["롱롱핑, 머리 휘날리는 것도 적당히!"],
+      outro:["롱롱핑을 캐치하자 머리카락이 스르륵 돌아왔어.","긴 머리도 잘 가꿔야 예쁜 거야!"] },
+    ppony:{ setup:["뽀니핑의 유혹에 다들 홀려버렸어!","반짝이는 갈기만 졸졸 따라다니느라 할 일을 잊었어."],
+      choice:{q:"홀린 사람들, 어떻게 깨울까?",opts:[{t:"큰 소리로 이름을 부른다",r:"'정신 차려요!' 다들 화들짝!"},{t:"더 반짝이는 것을 보여준다",r:"하츄핑의 하트가 반짝! 시선 집중!"}]},
+      pre:["뽀니핑, 유혹은 이제 그만!"],
+      outro:["뽀니핑을 캐치하자 다들 정신이 돌아왔어.","진짜 멋짐은 유혹하지 않아도 빛나!"] },
+    cue:{ setup:["큐핑 곁에선 속마음이 뿅뿅 소리내어 튀어나와!","비밀이 다 들려서 온 마을이 발칵 뒤집혔어."],
+      choice:{q:"튀어나오는 속마음, 어떻게 할까?",opts:[{t:"솔직하게 먼저 말한다",r:"로미의 솔직함에 큐핑이 감동!"},{t:"귀를 막고 다가간다",r:"속마음을 안 듣고 살금살금!"}]},
+      pre:["큐핑, 속마음은 스스로 말할 때 소중해!"],
+      outro:["큐핑을 캐치하자 속마음 소리가 멈췄어.","마음은 뿅뿅 말고 진심으로 전하자!"] },
+    sapun:{ setup:["하츄핑이 사뿐핑을 몰래 관찰하고 있어.","사뿐사뿐… 우아한 발걸음으로 어딜 가는 걸까?"],
+      choice:{q:"사뿐핑의 뒤를 어떻게 쫓을까?",opts:[{t:"하츄핑처럼 살금살금",r:"들키지 않고 따라갔어!"},{t:"우아하게 함께 걷는다",r:"사뿐핑이 로미의 걸음에 방긋!"}]},
+      pre:["사뿐핑, 이제 같이 가자!"],
+      outro:["사뿐핑을 캐치했어! 하츄핑의 관찰 대성공!","우아함은 함께 걸을 때 더 빛나!"] },
+    kkaegul:{ setup:["이클립스핑의 계획을 막아야 해!","그런데… 명랑한 깨굴핑에게 숨겨진 정체가 있다고?!"],
+      choice:{q:"깨굴핑의 비밀, 어떻게 마주할까?",opts:[{t:"믿는다고 말해준다",r:"'네가 누구든 친구야!' 깨굴핑이 뭉클!"},{t:"정정당당 대결을 청한다",r:"개굴! 깨굴핑이 폴짝 나섰어!"}]},
+      pre:["깨굴핑, 정체를 보여줘!"],
+      outro:["깨굴핑의 정체는 프린스티니핑!","비밀을 나누니 진짜 친구가 됐어!"] },
+    gentle:{ setup:["이클립스핑을 막는 길목, 젠틀핑이 나타났다!","완벽한 신사 젠틀핑이 마지막 관문을 지키고 있어."],
+      choice:{q:"신사 젠틀핑, 어떻게 상대할까?",opts:[{t:"정중히 길을 청한다",r:"로미의 예의에 젠틀핑이 모자를 들어 인사!"},{t:"진심으로 부탁한다",r:"'모두를 구해야 해요!' 젠틀핑이 끄덕!"}]},
+      pre:["젠틀핑, 신사답게 정정당당히 겨루자!"],
+      outro:["젠틀핑이 길을 열어주었어!","이제 이클립스핑을 막으러 가자!"] },
+    yaong:{ setup:["꼭꼭 숨어라~ 야옹핑이 숨바꼭질을 시작했어!","물건도 사람도 야옹핑 따라 꼭꼭 숨어버렸어."],
+      choice:{q:"숨은 야옹핑, 어떻게 찾을까?",opts:[{t:"숨바꼭질로 승부한다",r:"까꿍! 로미가 먼저 찾았어!"},{t:"좋아하는 방울로 유인한다",r:"딸랑딸랑~ 야옹핑이 빼꼼!"}]},
+      pre:["야옹핑, 찾았다! 이제 캐치!"],
+      outro:["야옹핑을 캐치하자 숨은 것들이 돌아왔어.","숨바꼭질은 찾아줄 친구가 있어야 재밌어!"] },
   };
   PINGS.forEach(p=>{ if(EPS[p.id]) p.ep=EPS[p.id]; });
 
-  // 변신 프린세스 폼 이름 (placeholder — 실제 폼 이름으로 교체 가능)
-  const FORM_NAMES={ /* 예: sapun:"프린세스 그레이스" 처럼 실제 이름으로 채우면 됨 */ };
-  PINGS.forEach(p=>{ if(p.partner)return;
-    p.form={ name: FORM_NAMES[p.id] || ("프린세스 "+p.name.replace(/핑$/,"")), img:"form_"+p.id }; });
+  // ── 시즌6 실제 회차 정보 (회차 목록 기반 · 대사는 오리지널 각색) ──
+  const FORMS={ fancyheart:"프린세스 팬시하트", plie:"프린세스 쁠리에", bonita:"프린세스 보니타",
+    fantana:"프린세스 판타나", luminous:"프린세스 루미너스", darkness:"프린세스 다크니스" };
+  const CANON={
+    ppoduk:  {no:3,  title:"뽀득핑은 뽀득뽀득 뽀드득", form:"plie"},
+    charming:{no:4,  title:"매력을 찾아줄게 차밍핑",   form:"bonita"},
+    nabi:    {no:5,  title:"날개를 달아줘 나비핑",     form:"fantana"},
+    silk:    {no:6,  title:"실크핑과 마법 양탄자",     form:"fancyheart"},
+    charle:  {no:7,  title:"삼총사 티니핑",            form:"fancyheart"},
+    trot:    {no:7.5,title:"삼총사 티니핑",            form:"fancyheart"},
+    snow:    {no:8,  title:"차갑게 꽁꽁 스노우핑",     form:"plie"},
+    areum:   {no:9,  title:"바느질은 아름핑에게 맡겨줘", form:null},
+    iseul:   {no:11, title:"이슬핑의 이슬 한 방울",    form:"bonita"},
+    coolcool:{no:12, title:"낮잠 진짜 좋아 쿨쿨핑",    form:"fancyheart"},
+    shushu:  {no:14, title:"시간을 되돌려 슈슈핑",     form:"fantana"},
+    longlong:{no:16, title:"긴 머리 휘날리며 롱롱핑",  form:"plie", star:true},
+    ppony:   {no:18, title:"유혹의 뽀니핑",            form:null},
+    cue:     {no:19, title:"속마음 뿅뿅 큐핑",         form:"fantana"},
+    sapun:   {no:20, title:"하츄핑의 사뿐핑 관찰기",   form:null},
+    kkaegul: {no:21, title:"이클립스핑을 막아라",      form:"bonita"},
+    gentle:  {no:21.5,title:"이클립스핑을 막아라",     form:"bonita"},
+    yaong:   {no:23, title:"꼭꼭 숨어! 야옹핑",        form:"fantana"},
+  };
+  PINGS.forEach(p=>{ if(CANON[p.id]) p.canon=CANON[p.id]; });
+  const epNo=p=>(p.canon?Math.floor(p.canon.no):99);
 
   // 최종장 (자매 & 거울)
   const DIANA={id:"diana",name:"다이아나핑",kw:"빛의 언니"};
@@ -249,7 +270,8 @@
   const catchTargets=()=>PINGS.filter(p=>!p.partner);
   const caughtCount=()=>catchTargets().filter(p=>caught[p.id]).length;
   const allCaught=()=>catchTargets().every(p=>caught[p.id]);
-  function nextTarget(){ return catchTargets().find(p=>!caught[p.id]); }
+  function nextTarget(){ return catchTargets().filter(p=>!caught[p.id])
+    .sort((a,b)=>((a.canon?a.canon.no:99)-(b.canon?b.canon.no:99)))[0]; }
 
   // ── 스프라이트 교체 ──
   const IDS=[...PINGS.map(p=>p.id),"romi","diana","eclipse","mirror","darkbit","royal"];
@@ -268,8 +290,7 @@
   const FORMIMG={};
   function loadForm(key){ const im=new Image(); im._ok=false; im.onload=()=>im._ok=true; im.onerror=()=>{};
     im.src=(window.__PING_IMG&&window.__PING_IMG[key])||("assets/"+key+".png"); FORMIMG[key]=im; }
-  PINGS.forEach(p=>{ if(!p.partner) loadForm("form_"+p.id); });
-  loadForm("form_diana");
+  ["fancyheart","plie","bonita","fantana","luminous","darkness"].forEach(f=>loadForm("form_"+f));
 
   // ── fallback 아트 ──
   function eyeF(x,y,rx,ry,mid,lo){ ctx.fillStyle="#fff";ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,7);ctx.fill();
@@ -475,11 +496,11 @@
 
   // 오프닝
   const OPENING=[
+    {bg:"train",name:"1화",text:"《출발! 프린세스 회담행 열차》"},
     {bg:"train",name:"나레이션",text:"로미는 각국의 프린세스 티니핑들이 모이는 '프린세스 회담'에 초대받았어."},
     {bg:"train",name:"나레이션",text:"반짝이는 열차 안, 프린세스 티니핑들이 로미를 예쁘게 꾸며주고 있었지."},
-    {bg:"train",name:"나레이션",text:"그런데 갑자기, 정체 모를 어둠의 힘이 열차를 덮쳤다 —"},
-    {bg:"dark",name:"이클립스핑",text:"후훗… 프린세스 티니핑들아, 뿔뿔이 흩어져라!"},
-    {bg:"dark",name:"나레이션",text:"프린세스 티니핑들이 하모니 마을 곳곳으로 흩어져 버렸다!"},
+    {bg:"dark",name:"이클립스핑",text:"후훗… 나의 저주를 받아라!"},
+    {bg:"dark",name:"나레이션",text:"이클립스핑의 저주로 다이아나핑이 거울 속에 봉인되고, 프린세스 티니핑들이 뿔뿔이 흩어져 버렸다!"},
     {bg:"village",name:"하츄핑",text:"로미야! 흩어진 프린세스 티니핑들을 모두 캐치해서 회담을 되살리자!"},
   ];
   let openIdx=0, openShown=0;
@@ -521,25 +542,40 @@
       const p=battle.ping, rem=catchTargets().length-caughtCount();
       const outro=(p.ep&&p.ep.outro)?p.ep.outro:[];
       if(allCaught()) say("하츄핑",[...outro,"대단해 로미! 흩어진 프린세스 티니핑을 모두 캐치했어!","이제 거울의 성으로 가서 다이아나핑을 구하고, 회담을 되살리자!","(마을 위쪽 보라색 관문이 열렸어!)"],null);
-      else say("나레이션",[...outro, p.name+"이(가) 도감에 등록됐다!","남은 프린세스 티니핑: "+rem+"마리. 계속 찾아보자!"],null);
+      else say("나레이션",[...outro, p.name+"이(가) 도감에 등록됐다!","남은 프린세스 티니핑: "+rem+"마리. 계속 찾아보자!"],
+        ()=>{ if(p.id==="coolcool"&&!caught._ep13) ep13Event(); });
     } else if(res==="faint"){ mode="field"; }
     else if(res==="flee"){ mode="field"; }
-    else if(res==="bosswin"){ bossProgress(); }
+    else if(res==="bosswin"){ if(battle.onWin){ const f=battle.onWin; battle.onWin=null; f(); } else bossProgress(); }
     else { mode="field"; }
+  }
+
+  // 13화 <이클립스봇의 습격> — 캐치한 티니핑 총출동 + 4단 연속 변신
+  function ep13Event(){ caught._ep13=true; save();
+    say("13화",["《이클립스봇의 습격》","이클립스핑이 보낸 이클립스봇이 마을을 덮쳤다!","지금까지 캐치한 프린세스티니핑들이 모두 달려왔어!"],()=>{
+      startTransform({ title:"✧ 4단 연속 변신! ✧", name:"팬시하트☆·쁠리에☆·판타나☆·보니타☆",
+        img:FORMIMG.form_fancyheart, pingId:"hachu",
+        then:()=>{ startBattle({id:"darkbit",name:"이클립스봇",kw:"어둠",hp:34,body:["#b06bff","#3a1258"]},"boss");
+          battle.onWin=()=> say("하츄핑",["이클립스봇을 물리쳤어!","이클립스핑… 거울의 성에서 결판을 내자!"],null); } });
+    });
   }
 
   // ── 최종장 진행 ──
   let bossStage=0;
   function enterCastle(){
-    say("나레이션",["거울의 성에 도착했다.","다이아나핑을 가둔 이클립스핑이 기다리고 있다…"],()=>{ startBattle(ECLIPSE,"boss"); });
+    say("24화",["《프린세스 무도회》","캐치한 프린세스·프린스 티니핑이 모두 모여 무도회가 열렸다.","그때, 거울 속에서 다이아나핑의 목소리가 들려왔다…"],()=>{
+      say("25화",["《거울 저 너머에》","거울 저 너머 — 이클립스핑이 기다리고 있다!"],()=>{ startBattle(ECLIPSE,"boss"); });
+    });
   }
   function bossProgress(){
     bossStage++;
-    if(bossStage===1){ // 이클립스핑 격파 후
-      say("이클립스핑",["…어째서? 거울이 나에게 힘을 줬는데…","크윽… 거울이… 나를 조종하고 있었어!",
-        "다이아나핑 언니…! 로미, 진짜 적은 이 거울, 미루아르야!","언니와 내가 함께 맞설게. 도와줘, 로미!"],
-        ()=> startTransform({ title:"✧ 자매의 합체 변신! ✧", name:"프린세스 다이아나", img:FORMIMG.form_diana, pingId:"diana",
-          then:()=> startBattle(MIRROR,"boss") }));
+    if(bossStage===1){ // 이클립스핑 격파 후 → 22화 진실 + 26화 최종전
+      say("이클립스핑",["…어째서? 거울이 나에게 힘을 줬는데…","크윽… 미루아르가… 나를 조종하고 있었어!",
+        "《이클립스핑의 진실》 — 자매를 갈라놓은 건 거울, 미루아르였다.","다이아나핑 언니…! 로미, 함께 싸워줘!"],
+        ()=> say("26화",["《하나의 마음으로》","빛과 어둠, 자매의 마음이 하나로 모인다!"],
+          ()=> startTransform({ title:"✧ 마지막 변신! ✧", name:"프린세스 루미너스", img:FORMIMG.form_luminous, pingId:"diana",
+            then:()=> startTransform({ title:"✧ 하나의 마음으로! ✧", name:"프린세스 다크니스", img:FORMIMG.form_darkness, pingId:"eclipse",
+              then:()=> startBattle(MIRROR,"boss") }) })));
     } else { // 미루아르 격파 → 엔딩
       mode="ending"; sfx.win();
     }
@@ -561,7 +597,10 @@
   function pressA(){ initAudio();
     if(mode==="title"){ mode="opening"; openIdx=0; openShown=0; return; }
     if(mode==="opening"){ if(openShown<OPENING[openIdx].text.length){openShown=OPENING[openIdx].text.length;return;}
-      openIdx++; if(openIdx>=OPENING.length){ mode="field"; } else { openShown=0; sfx.talk(); } return; }
+      openIdx++; if(openIdx>=OPENING.length){
+        startTransform({ title:"✧ 첫 변신! ✧", name:"프린세스 팬시하트", img:FORMIMG.form_fancyheart, pingId:"hachu",
+          then:()=>{ mode="field"; } });
+      } else { openShown=0; sfx.talk(); } return; }
     if(mode==="dialog"){ dlgAdvance(); return; }
     if(mode==="choice"){ choiceConfirm(); return; }
     if(mode==="xform"){ xformFinish(); return; }
@@ -615,7 +654,9 @@
     dexCnt.textContent=caughtCount()+" / "+catchTargets().length+" 마리";
     dexGrid.innerHTML="";
     const next=nextTarget();
-    for(const p of PINGS){
+    const list=[...PINGS].sort((a,b)=>{ if(a.partner)return -1; if(b.partner)return 1;
+      return (a.canon?a.canon.no:99)-(b.canon?b.canon.no:99); });
+    for(const p of list){
       const got=!!caught[p.id]; const isNext=next&&p.id===next.id;
       const card=document.createElement("div");
       card.className="pcard"+(got?"":" locked")+(isNext?" next":"");
@@ -629,7 +670,8 @@
       cx.restore();
       card.appendChild(c);
       card.insertAdjacentHTML("beforeend",
-        `<div class="pn">${got||isNext?p.name:"???"}</div><div class="pk">${got?p.kw:(isNext?"⭐ 지금 도전!":"")}</div>
+        `<div class="pn">${got||isNext?p.name:"???"}</div>
+         <div class="pk">${got?((p.canon?Math.floor(p.canon.no)+"화 · ":"")+p.kw):(isNext?("⭐ "+(p.canon?Math.floor(p.canon.no)+"화 도전!":"지금 도전!")):"")}</div>
          <div class="badge">${got?"✅":(isNext?"⭐":"🔒")}</div>`);
       if((isNext||(!got&&p.partner))){ card.style.cursor="pointer";
         card.addEventListener("click",()=>{ if(p.partner)return; sfx.sel(); startEpisode(p); }); }
@@ -654,12 +696,17 @@
 
   // ── 에피소드 (발단 → 선택 → 변신 → 전투 → 마무리) ──
   function startEpisode(p){ closeDex(); runEpisode(p); }
-  function runEpisode(p){ const ep=p.ep;
-    if(!ep){ say("에피소드",p.line||["티니핑이 나타났다!"],()=>startBattle(p,"catch")); return; }
-    say("에피소드", ep.setup, ()=>{
-      const toBattle=()=> say(p.name, ep.pre, ()=> startTransform({
-        title:"✧ 프린세스 변신! ✧", name:(p.form&&p.form.name)||"", img:FORMIMG["form_"+p.id], pingId:p.id,
-        then:()=> startBattle(p,"catch") }));
+  function runEpisode(p){ const ep=p.ep, c=p.canon;
+    const epName=c?(Math.floor(c.no)+"화"):"에피소드";
+    const setup=c?["《"+c.title+"》",...(ep?ep.setup:[])]:(ep?ep.setup:["티니핑이 나타났다!"]);
+    if(!ep){ say(epName,setup,()=>startBattle(p,"catch")); return; }
+    say(epName, setup, ()=>{
+      const toBattle=()=> say(p.name, ep.pre, ()=>{
+        const fk=c&&c.form;
+        if(!fk){ startBattle(p,"catch"); return; } // 원작에서 변신 없는 회차
+        startTransform({ title:"✧ 프린세스 변신! ✧", name:FORMS[fk]+((c&&c.star)?" ☆":""),
+          img:FORMIMG["form_"+fk], pingId:p.id, then:()=> startBattle(p,"catch") });
+      });
       if(ep.choice) askChoice(ep.choice.q, ep.choice.opts, (o)=> say("로미",[o.r], toBattle));
       else toBattle();
     });
